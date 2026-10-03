@@ -13,8 +13,8 @@ import tomllib
 
 import pytest
 
-from ..config import LoadConfig
-from ..loader import load_session_config
+from tmw.config import LoadConfig
+from tmw.loader import load_session_config
 from .conftest import run_tmw, session_index
 
 pytestmark = [

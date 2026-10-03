@@ -1,6 +1,6 @@
 """E2E tests for the 'session' subcommand (and a 'list' bonus) against a real tmux server.
 
-Unlike the rest of the suite, these tests invoke the real CLI (tmw.py) as a
+Unlike the rest of the suite, these tests invoke the real CLI (python -m tmw) as a
 subprocess and verify behavior with raw `tmux` queries run independently of
 the code under test — no TmuxClient mocking anywhere. Skipped automatically
 when tmux isn't on PATH.

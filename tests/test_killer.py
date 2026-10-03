@@ -1,4 +1,4 @@
-"""Tests for tmux_wrapper.killer that don't fit test_killer_e2e.py.
+"""Tests for tmw.killer that don't fit test_killer_e2e.py.
 
 Direct-target kills, the wildcard keep/kill-all flow, and the interactive
 loop's happy and bad-input paths are covered end-to-end against a real tmux
@@ -12,9 +12,9 @@ server in test_killer_e2e.py. What's left here is:
 
 import pytest
 
-from ..config import KillConfig
-from ..exceptions import AppError
-from ..killer import SessionKiller, _parse_target, _Target
+from tmw.config import KillConfig
+from tmw.exceptions import AppError
+from tmw.killer import SessionKiller, _parse_target, _Target
 
 
 class TestParseTarget:

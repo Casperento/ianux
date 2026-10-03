@@ -1,9 +1,9 @@
-"""Tests for tmux_wrapper.picker."""
+"""Tests for tmw.picker."""
 
 import pytest
 
-from ..exceptions import AppError
-from ..picker import pick, pick_session
+from tmw.exceptions import AppError
+from tmw.picker import pick, pick_session
 
 
 class TestPick:

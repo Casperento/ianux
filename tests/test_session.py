@@ -1,4 +1,4 @@
-"""Tests for tmux_wrapper.session.SessionManager's pure pane-layout logic.
+"""Tests for tmw.session.SessionManager's pure pane-layout logic.
 
 The session-setup flow itself (create/attach, existing-session prompt,
 multi-window, detach, per-pane directories) is covered end-to-end against a
@@ -11,7 +11,7 @@ over asserting the exact call sequence directly.
 
 from pathlib import Path
 
-from ..session import SessionManager
+from tmw.session import SessionManager
 
 
 # ---------------------------------------------------------------------------

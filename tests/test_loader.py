@@ -1,13 +1,13 @@
-"""Tests for tmux_wrapper.loader."""
+"""Tests for tmw.loader."""
 
 import re
 from pathlib import Path
 
 import pytest
 
-from ..config import LoadConfig, SessionConfig, WindowConfig
-from ..exceptions import AppError
-from ..loader import load_session_config
+from tmw.config import LoadConfig, SessionConfig, WindowConfig
+from tmw.exceptions import AppError
+from tmw.loader import load_session_config
 
 
 def _write(tmp_path: Path, text: str) -> LoadConfig:

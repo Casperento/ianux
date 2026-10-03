@@ -1,12 +1,12 @@
-"""Tests for tmux_wrapper.tmux.TmuxClient."""
+"""Tests for tmw.tmux.TmuxClient."""
 
 import subprocess
 
 import pytest
 
 from .conftest import make_run_fn
-from ..exceptions import AppError
-from ..tmux import TmuxClient
+from tmw.exceptions import AppError
+from tmw.tmux import TmuxClient
 
 
 # ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ Subcommands
 -----------
 session  (s)  — default
     Create / attach to a multi-window, multi-pane dev tmux session.
-    Existing callers using bare flags (``./tmw.py --panes 6``) are
+    Existing callers using bare flags (``tmw --panes 6``) are
     kept working: if the first argument is not a recognised subcommand, the
     parser silently inserts ``session`` before it.
 
@@ -148,9 +148,9 @@ def _normalize_argv(argv: list[str]) -> list[str]:
     Empty argv shows top-level help so that bare invocation is informative
     rather than dropping silently into the interactive session flow.
 
-    This lets callers continue to use ``./tmw.py --panes 6`` without
-    any change while also supporting ``./tmw.py session --panes 6``
-    and ``./tmw.py run ...``.
+    This lets callers continue to use ``tmw --panes 6`` without
+    any change while also supporting ``tmw session --panes 6``
+    and ``tmw run ...``.
     """
     if not argv:
         return ["--help"]

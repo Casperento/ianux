@@ -1,18 +1,18 @@
-"""Tests for tmux_wrapper.cli."""
+"""Tests for tmw.cli."""
 
 import re
 from pathlib import Path
 
 import pytest
 
-from ..cli import (
+from tmw.cli import (
     _looks_like_session_name,
     _normalize_argv,
     _slice_by_window,
     build_resolver,
     parse_args,
 )
-from ..config import (
+from tmw.config import (
     AttachConfig,
     DumpConfig,
     KillConfig,
@@ -23,7 +23,7 @@ from ..config import (
     WindowConfig,
     auto_session_name,
 )
-from ..directory import ExplicitResolver
+from tmw.directory import ExplicitResolver
 
 
 # ---------------------------------------------------------------------------

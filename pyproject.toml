@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tmw"
+dynamic = ["version"]
+description = "A quick-to-use tmux wrapper for managing sessions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+
+[project.scripts]
+tmw = "tmw.__main__:entrypoint"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "tmw.__version__"}

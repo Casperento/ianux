@@ -1,4 +1,4 @@
-"""Shared fixtures and helpers for tmux_wrapper tests."""
+"""Shared fixtures and helpers for tmw tests."""
 
 import os
 import pty
@@ -12,10 +12,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ..tmux import TmuxClient
+from tmw.tmux import TmuxClient
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
-_TMW = _PROJECT_ROOT / "tmw.py"
 
 
 def make_run_fn(returncode: int = 0, stdout: str = "", raise_file_not_found: bool = False):
@@ -49,7 +48,7 @@ def mock_client():
 def run_tmw(*args: str, input: str | None = None) -> subprocess.CompletedProcess:
     """Invoke the real tmw CLI as a subprocess (for E2E tests) and return the result."""
     return subprocess.run(
-        [sys.executable, str(_TMW), *args],
+        [sys.executable, "-m", "tmw", *args],
         input=input,
         capture_output=True,
         text=True,
@@ -130,7 +129,7 @@ class AttachedProcess:
 
 
 def run_tmw_attached(*args: str, input: str | None = None) -> AttachedProcess:
-    """Launch `tmw.py <args>` on a pty so a real `tmux attach-session` can succeed.
+    """Launch `python -m tmw <args>` on a pty so a real `tmux attach-session` can succeed.
 
     When *input* is given, it's written to the pty immediately — used to
     drive an interactive picker prompt that runs before the attach itself.
@@ -138,7 +137,7 @@ def run_tmw_attached(*args: str, input: str | None = None) -> AttachedProcess:
     master_fd, slave_fd = pty.openpty()
     env = dict(os.environ, TERM=os.environ.get("TERM") or "xterm")
     proc = subprocess.Popen(
-        [sys.executable, str(_TMW), *args],
+        [sys.executable, "-m", "tmw", *args],
         stdin=slave_fd, stdout=slave_fd, stderr=slave_fd, env=env,
     )
     os.close(slave_fd)

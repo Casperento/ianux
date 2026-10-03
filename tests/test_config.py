@@ -1,17 +1,17 @@
-"""Tests for tmux_wrapper.config."""
+"""Tests for tmw.config."""
 
 import re
 from pathlib import Path
 
 import pytest
 
-from ..config import (
+from tmw.config import (
     SessionConfig,
     WindowConfig,
     build_session_config,
     build_window_config,
 )
-from ..exceptions import AppError
+from tmw.exceptions import AppError
 
 
 class TestBuildWindowConfig:

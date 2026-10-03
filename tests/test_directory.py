@@ -1,11 +1,11 @@
-"""Tests for tmux_wrapper.directory resolvers."""
+"""Tests for tmw.directory resolvers."""
 
 from pathlib import Path
 
 import pytest
 
-from ..directory import ExplicitResolver
-from ..exceptions import AppError
+from tmw.directory import ExplicitResolver
+from tmw.exceptions import AppError
 
 
 # ---------------------------------------------------------------------------

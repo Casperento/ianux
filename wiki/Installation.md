@@ -1,0 +1,49 @@
+# Installation and setup
+
+## Requirements
+
+- Python 3.11 or later
+- [uv](https://docs.astral.sh/uv/) for installation and project commands
+- `tmux` installed separately and available on `PATH`
+
+## Install as a command
+
+From the project checkout:
+
+```bash
+uv tool install .
+tmw --help
+```
+
+Then run commands directly, for example:
+
+```bash
+tmw session --panes 4
+tmw list
+```
+
+## Run from a checkout
+
+Sync the development environment, then run TMW through uv:
+
+```bash
+uv sync
+uv run tmw --help
+uv run tmw session --panes 4
+```
+
+## Build distributions
+
+Build a wheel and source distribution in `dist/`:
+
+```bash
+uv build
+```
+
+Use `uv build --clear` to clear previous build outputs first. To install the resulting wheel as a standalone tool:
+
+```bash
+uv tool install dist/tmw-*.whl
+```
+
+See [Development and testing](Development.md) for running tests and contributing from a checkout.

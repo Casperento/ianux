@@ -1,18 +1,18 @@
-"""Tests for tmw.cli."""
+"""Tests for ianux.cli."""
 
 import re
 from pathlib import Path
 
 import pytest
 
-from tmw.cli import (
+from ianux.cli import (
     _looks_like_session_name,
     _normalize_argv,
     _slice_by_window,
     build_resolver,
     parse_args,
 )
-from tmw.config import (
+from ianux.config import (
     AttachConfig,
     DumpConfig,
     KillConfig,
@@ -23,7 +23,7 @@ from tmw.config import (
     WindowConfig,
     auto_session_name,
 )
-from tmw.directory import ExplicitResolver
+from ianux.directory import ExplicitResolver
 
 
 # ---------------------------------------------------------------------------
@@ -353,7 +353,7 @@ class TestBuildResolver:
                 WindowConfig(panes=2, directories=[first, second], init_commands=["bash"]),
                 WindowConfig(panes=1, directories=[second], init_commands=["bash"]),
             ],
-            session_name="tmw",
+            session_name="ianux",
         )
         resolver = build_resolver(cfg)
         assert isinstance(resolver, ExplicitResolver)

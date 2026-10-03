@@ -1,7 +1,7 @@
 """E2E tests for the 'dump' subcommand against a real tmux server.
 
 Builds real sessions with known pane directories via raw tmux commands
-(independent of session.py), runs `tmw dump` as a real subprocess, and
+(independent of session.py), runs `ianux dump` as a real subprocess, and
 verifies the written TOML — including round-tripping it through the real
 loader, exactly as 'load'/'session' would consume it.
 """
@@ -13,9 +13,9 @@ import tomllib
 
 import pytest
 
-from tmw.config import LoadConfig
-from tmw.loader import load_session_config
-from .conftest import run_tmw, session_index
+from ianux.config import LoadConfig
+from ianux.loader import load_session_config
+from .conftest import run_ianux, session_index
 
 pytestmark = [
     pytest.mark.e2e,
@@ -52,7 +52,7 @@ class TestDumpDirect:
         _tmux("new-session", "-d", "-s", e2e_session_name)
         _set_pane_cwd(e2e_session_name, "0", "0", work)
 
-        result = run_tmw("dump", e2e_session_name, "-o", str(tmp_path))
+        result = run_ianux("dump", e2e_session_name, "-o", str(tmp_path))
         assert result.returncode == 0, result.stderr
 
         data = _read_toml(tmp_path / f"{e2e_session_name}.toml")
@@ -78,7 +78,7 @@ class TestDumpDirect:
         _tmux("new-window", "-t", f"{e2e_session_name}:", "-n", "logs")
         _set_pane_cwd(e2e_session_name, "1", "0", dir1)
 
-        result = run_tmw("dump", e2e_session_name, "-o", str(tmp_path))
+        result = run_ianux("dump", e2e_session_name, "-o", str(tmp_path))
         assert result.returncode == 0, result.stderr
 
         data = _read_toml(tmp_path / f"{e2e_session_name}.toml")
@@ -90,7 +90,7 @@ class TestDumpDirect:
         _tmux("new-session", "-d", "-s", e2e_session_name)
         _tmux("rename-window", "-t", f"{e2e_session_name}:0", "")
 
-        result = run_tmw("dump", e2e_session_name, "-o", str(tmp_path))
+        result = run_ianux("dump", e2e_session_name, "-o", str(tmp_path))
         assert result.returncode == 0, result.stderr
 
         data = _read_toml(tmp_path / f"{e2e_session_name}.toml")
@@ -100,7 +100,7 @@ class TestDumpDirect:
         _tmux("new-session", "-d", "-s", e2e_session_name)
         idx = session_index(e2e_session_name)
 
-        result = run_tmw("dump", str(idx), "-o", str(tmp_path))
+        result = run_ianux("dump", str(idx), "-o", str(tmp_path))
         assert result.returncode == 0, result.stderr
         assert _read_toml(tmp_path / f"{e2e_session_name}.toml")["session_name"] == e2e_session_name
 
@@ -108,12 +108,12 @@ class TestDumpDirect:
         _tmux("new-session", "-d", "-s", e2e_session_name)
         out_dir = tmp_path / "nested" / "dir"
 
-        result = run_tmw("dump", e2e_session_name, "-o", str(out_dir))
+        result = run_ianux("dump", e2e_session_name, "-o", str(out_dir))
         assert result.returncode == 0, result.stderr
         assert (out_dir / f"{e2e_session_name}.toml").exists()
 
     def test_raises_when_session_missing(self, e2e_session_name, tmp_path):
-        result = run_tmw("dump", e2e_session_name, "-o", str(tmp_path))
+        result = run_ianux("dump", e2e_session_name, "-o", str(tmp_path))
         assert result.returncode != 0
         assert "does not exist" in result.stderr
 
@@ -123,6 +123,6 @@ class TestDumpInteractive:
         _tmux("new-session", "-d", "-s", e2e_session_name)
         idx = session_index(e2e_session_name)
 
-        result = run_tmw("dump", "-o", str(tmp_path), input=f"{idx}\n")
+        result = run_ianux("dump", "-o", str(tmp_path), input=f"{idx}\n")
         assert result.returncode == 0, result.stderr
         assert (tmp_path / f"{e2e_session_name}.toml").exists()

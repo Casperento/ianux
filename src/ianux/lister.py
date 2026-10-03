@@ -90,7 +90,7 @@ class SessionLister:
             ────────────────────────────────────────────────────────────────
               #   Name                         Window(s)/Pane(s)          Created              Size
               1   my-session                   0 : 0  (1 pane)            Aug 19 2026  05:58   270x72
-              2   tmw-session-name             0 : 0, 1, 2  (3 panes)    Aug 20 2026  10:10   236x64
+              2   ianux-session-name             0 : 0, 1, 2  (3 panes)    Aug 20 2026  10:10   236x64
                                                1 : 0  (1 pane)
 
         Returns 0 on success.

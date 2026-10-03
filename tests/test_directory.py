@@ -1,11 +1,11 @@
-"""Tests for tmw.directory resolvers."""
+"""Tests for ianux.directory resolvers."""
 
 from pathlib import Path
 
 import pytest
 
-from tmw.directory import ExplicitResolver
-from tmw.exceptions import AppError
+from ianux.directory import ExplicitResolver
+from ianux.exceptions import AppError
 
 
 # ---------------------------------------------------------------------------

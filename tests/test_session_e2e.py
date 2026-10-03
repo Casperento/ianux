@@ -1,6 +1,6 @@
 """E2E tests for the 'session' subcommand (and a 'list' bonus) against a real tmux server.
 
-Unlike the rest of the suite, these tests invoke the real CLI (python -m tmw) as a
+Unlike the rest of the suite, these tests invoke the real CLI (python -m ianux) as a
 subprocess and verify behavior with raw `tmux` queries run independently of
 the code under test — no TmuxClient mocking anywhere. Skipped automatically
 when tmux isn't on PATH.
@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from .conftest import run_tmw
+from .conftest import run_ianux
 
 pytestmark = [
     pytest.mark.e2e,
@@ -64,7 +64,7 @@ class TestSessionCreation:
         dira.mkdir()
         dirb.mkdir()
 
-        result = run_tmw(
+        result = run_ianux(
             "session",
             "--panes", "2",
             "--session-name", e2e_session_name,
@@ -97,7 +97,7 @@ class TestMultipleWindows:
         for d in (dir_editor, dir_logs_a, dir_logs_b):
             d.mkdir()
 
-        result = run_tmw(
+        result = run_ianux(
             "session",
             "--session-name", e2e_session_name,
             "--window-panes", "1",
@@ -136,7 +136,7 @@ class TestDuplicateSessionName:
         d = tmp_path / "work"
         d.mkdir()
 
-        first = run_tmw(
+        first = run_ianux(
             "session", "--panes", "1", "--session-name", e2e_session_name,
             "--directory", str(d), "--init-command", "", "--detach",
         )
@@ -145,7 +145,7 @@ class TestDuplicateSessionName:
 
         numbered = f"{e2e_session_name}-1"
         try:
-            second = run_tmw(
+            second = run_ianux(
                 "session", "--panes", "3", "--session-name", e2e_session_name,
                 "--directory", str(d), "--init-command", "", "--detach",
             )
@@ -166,13 +166,13 @@ class TestListSubcommand:
         d = tmp_path / "work"
         d.mkdir()
 
-        created = run_tmw(
+        created = run_ianux(
             "session", "--panes", "2", "--session-name", e2e_session_name,
             "--directory", str(d), "--init-command", "", "--detach",
         )
         assert created.returncode == 0, created.stderr
 
-        listed = run_tmw("list")
+        listed = run_ianux("list")
         assert listed.returncode == 0, listed.stderr
         assert e2e_session_name in listed.stdout
         assert "2 panes" in listed.stdout

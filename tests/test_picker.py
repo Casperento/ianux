@@ -1,9 +1,9 @@
-"""Tests for tmw.picker."""
+"""Tests for ianux.picker."""
 
 import pytest
 
-from tmw.exceptions import AppError
-from tmw.picker import pick, pick_session
+from ianux.exceptions import AppError
+from ianux.picker import pick, pick_session
 
 
 class TestPick:

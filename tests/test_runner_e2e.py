@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from .conftest import run_tmw
+from .conftest import run_ianux
 
 pytestmark = [
     pytest.mark.e2e,
@@ -45,7 +45,7 @@ def _wait_until(predicate, timeout: float, interval: float = 0.2) -> bool:
 
 class TestRunWithoutKill:
     def test_sends_commands_in_order_and_leaves_session_running(self, e2e_session_name):
-        result = run_tmw(
+        result = run_ianux(
             "run", "--session", e2e_session_name, "echo first", "echo second",
         )
         assert result.returncode == 0, result.stderr
@@ -61,7 +61,7 @@ class TestRunWithoutKill:
 
     def test_raises_when_session_already_exists(self, e2e_session_name):
         _tmux("new-session", "-d", "-s", e2e_session_name)
-        result = run_tmw("run", "--session", e2e_session_name, "echo hi")
+        result = run_ianux("run", "--session", e2e_session_name, "echo hi")
         assert result.returncode != 0
         assert "already exists" in result.stderr
         assert _session_exists(e2e_session_name)  # untouched, not recreated
@@ -69,7 +69,7 @@ class TestRunWithoutKill:
 
 class TestRunWithKill:
     def test_monitor_daemon_captures_output_and_kills_session(self, e2e_session_name):
-        result = run_tmw(
+        result = run_ianux(
             "run", "--session", e2e_session_name, "--kill", "echo kill-path-marker",
         )
         assert result.returncode == 0, result.stderr
@@ -87,7 +87,7 @@ class TestRunWithKill:
 
     def test_custom_output_path_is_honored(self, e2e_session_name, tmp_path):
         custom_out = tmp_path / "custom.capture"
-        result = run_tmw(
+        result = run_ianux(
             "run", "--session", e2e_session_name, "--kill",
             "-o", str(custom_out), "echo custom-path-marker",
         )

@@ -2,7 +2,7 @@
 
 ## Set up a checkout
 
-TMW uses uv for its environment and build workflow. Sync the project and its development dependencies:
+Ianux uses uv for its environment and build workflow. Sync the project and its development dependencies:
 
 ```bash
 uv sync
@@ -22,7 +22,7 @@ End-to-end tests use a real tmux server and skip automatically when `tmux` is un
 uv run pytest -m "not e2e"
 ```
 
-The E2E harness is in `tests/conftest.py`. It launches TMW as a subprocess and verifies behavior with independent tmux queries. Interactive tests derive prompt indexes from the live session list, avoiding hardcoded selections that could target a developer's own session.
+The E2E harness is in `tests/conftest.py`. It launches Ianux as a subprocess and verifies behavior with independent tmux queries. Interactive tests derive prompt indexes from the live session list, avoiding hardcoded selections that could target a developer's own session.
 
 Unit tests cover logic that is best checked in isolation: CLI parsing and dispatch, configuration validation, directory resolution, picker behavior, and the exact argument and error-mapping contract at the `TmuxClient` boundary. A small number of orchestration unit tests cover pure edge cases, races, and machine-side effects that are unsuitable for E2E tests.
 

@@ -1,4 +1,4 @@
-"""Tests for tmw.__main__ (main / entrypoint)."""
+"""Tests for ianux.__main__ (main / entrypoint)."""
 
 from unittest.mock import patch
 
@@ -6,8 +6,8 @@ import pytest
 
 from pathlib import Path
 
-from tmw.__main__ import entrypoint, main
-from tmw.config import (
+from ianux.__main__ import entrypoint, main
+from ianux.config import (
     AttachConfig,
     DumpConfig,
     KillConfig,
@@ -16,7 +16,7 @@ from tmw.config import (
     SessionConfig,
     WindowConfig,
 )
-from tmw.exceptions import AppError
+from ianux.exceptions import AppError
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +26,7 @@ from tmw.exceptions import AppError
 
 def _patch_parse(config):
     """Patch parse_args to return *config*."""
-    return patch("tmw.__main__.parse_args", return_value=config)
+    return patch("ianux.__main__.parse_args", return_value=config)
 
 
 # ---------------------------------------------------------------------------
@@ -45,8 +45,8 @@ class TestMainRouting:
         ],
     )
     def test_routes_config_to_handler(self, mock_client, cfg, handler, method):
-        with _patch_parse(cfg), patch("tmw.__main__.TmuxClient", return_value=mock_client), \
-             patch(f"tmw.__main__.{handler}") as MockHandler:
+        with _patch_parse(cfg), patch("ianux.__main__.TmuxClient", return_value=mock_client), \
+             patch(f"ianux.__main__.{handler}") as MockHandler:
             getattr(MockHandler.return_value, method).return_value = 0
             result = main([])
         assert result == 0
@@ -56,11 +56,11 @@ class TestMainRouting:
     def test_routes_session_config(self, mock_client):
         cfg = SessionConfig(
             windows=[WindowConfig(panes=4, directories=[], init_commands=["bash"])],
-            session_name="tmw",
+            session_name="ianux",
         )
-        with _patch_parse(cfg), patch("tmw.__main__.TmuxClient", return_value=mock_client):
-            with patch("tmw.__main__.SessionManager") as MockManager, \
-                 patch("tmw.__main__.build_resolver") as mock_resolver:
+        with _patch_parse(cfg), patch("ianux.__main__.TmuxClient", return_value=mock_client):
+            with patch("ianux.__main__.SessionManager") as MockManager, \
+                 patch("ianux.__main__.build_resolver") as mock_resolver:
                 MockManager.return_value.setup.return_value = 0
                 result = main([])
         assert result == 0
@@ -70,12 +70,12 @@ class TestMainRouting:
         load_cfg = LoadConfig(path=Path("myproject.toml"))
         session_cfg = SessionConfig(
             windows=[WindowConfig(panes=3, directories=[Path("/tmp")], init_commands=["bash"])],
-            session_name="tmw",
+            session_name="ianux",
         )
-        with _patch_parse(load_cfg), patch("tmw.__main__.TmuxClient", return_value=mock_client):
-            with patch("tmw.__main__.load_session_config", return_value=session_cfg) as mock_load, \
-                 patch("tmw.__main__.SessionManager") as MockManager, \
-                 patch("tmw.__main__.build_resolver") as mock_resolver:
+        with _patch_parse(load_cfg), patch("ianux.__main__.TmuxClient", return_value=mock_client):
+            with patch("ianux.__main__.load_session_config", return_value=session_cfg) as mock_load, \
+                 patch("ianux.__main__.SessionManager") as MockManager, \
+                 patch("ianux.__main__.build_resolver") as mock_resolver:
                 MockManager.return_value.setup.return_value = 0
                 result = main([])
         assert result == 0
@@ -90,12 +90,12 @@ class TestMainRouting:
 
 class TestEntrypoint:
     def test_app_error_prints_to_stderr_and_returns_1(self, capsys):
-        with patch("tmw.__main__.main", side_effect=AppError("something went wrong")):
+        with patch("ianux.__main__.main", side_effect=AppError("something went wrong")):
             result = entrypoint()
         assert result == 1
         assert "something went wrong" in capsys.readouterr().err
 
     def test_returns_main_exit_code_on_success(self):
-        with patch("tmw.__main__.main", return_value=0):
+        with patch("ianux.__main__.main", return_value=0):
             result = entrypoint()
         assert result == 0

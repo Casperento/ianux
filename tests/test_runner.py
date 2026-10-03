@@ -1,4 +1,4 @@
-"""Tests for tmw.runner that don't fit test_runner_e2e.py.
+"""Tests for ianux.runner that don't fit test_runner_e2e.py.
 
 The happy paths (commands sent in order, --kill spawns a real daemon that
 captures output and kills the session, already-exists error, custom output
@@ -20,8 +20,8 @@ from unittest.mock import patch
 
 import pytest
 
-from tmw.exceptions import AppError
-from tmw.runner import SessionRunner, _monitor_loop, _POLL_TIMEOUT_S, _SENTINEL
+from ianux.exceptions import AppError
+from ianux.runner import SessionRunner, _monitor_loop, _POLL_TIMEOUT_S, _SENTINEL
 
 
 class TestMonitorLoop:
@@ -68,7 +68,7 @@ class TestWaitForDone:
         ]
 
         runner = SessionRunner(mock_client)
-        with patch("tmw.runner.time.sleep"):
+        with patch("ianux.runner.time.sleep"):
             result = runner._wait_for_done("s", "0", "0")
 
         assert mock_client.capture_pane.call_count == 2
@@ -83,7 +83,7 @@ class TestWaitForDone:
         )
 
         runner = SessionRunner(mock_client)
-        with patch("tmw.runner.time.sleep"):
+        with patch("ianux.runner.time.sleep"):
             result = runner._wait_for_done("s", "0", "0")
 
         assert _SENTINEL not in result
@@ -107,9 +107,9 @@ class TestWaitForDone:
         runner = SessionRunner(mock_client)
         start = time.monotonic()
         with patch(
-            "tmw.runner.time.monotonic",
+            "ianux.runner.time.monotonic",
             side_effect=[start, start + _POLL_TIMEOUT_S + 1],
         ):
-            with patch("tmw.runner.time.sleep"):
+            with patch("ianux.runner.time.sleep"):
                 with pytest.raises(AppError, match="Timed out"):
                     runner._wait_for_done("s", "0", "0")

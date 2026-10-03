@@ -1,17 +1,17 @@
-"""Tests for tmw.config."""
+"""Tests for ianux.config."""
 
 import re
 from pathlib import Path
 
 import pytest
 
-from tmw.config import (
+from ianux.config import (
     SessionConfig,
     WindowConfig,
     build_session_config,
     build_window_config,
 )
-from tmw.exceptions import AppError
+from ianux.exceptions import AppError
 
 
 class TestBuildWindowConfig:

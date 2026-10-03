@@ -1,6 +1,6 @@
 # Architecture
 
-TMW is a Python 3.11+ package under `src/tmw/`. It separates command-line parsing, configuration, tmux process access, and command orchestration.
+Ianux is a Python 3.11+ package under `src/ianux/`. It separates command-line parsing, configuration, tmux process access, and command orchestration.
 
 ```text
 argv

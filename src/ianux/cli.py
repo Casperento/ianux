@@ -4,7 +4,7 @@ Subcommands
 -----------
 session  (s)  — default
     Create / attach to a multi-window, multi-pane dev tmux session.
-    Existing callers using bare flags (``tmw --panes 6``) are
+    Existing callers using bare flags (``ianux --panes 6``) are
     kept working: if the first argument is not a recognised subcommand, the
     parser silently inserts ``session`` before it.
 
@@ -26,7 +26,7 @@ session  (s)  — default
 
     Example (2 windows: 2 panes then 1 pane)::
 
-        tmw session \\
+        ianux session \\
             --window-panes 2 --window-name editor \\
             --window-panes 1 --window-name logs \\
             --directory ~/src/frontend  --init-command 'npm run dev' \\
@@ -37,9 +37,9 @@ session  (s)  — default
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Pass ``-d`` to create the session and initialise all panes without
     attaching.  The session runs in the background; use
-    ``tmw attach`` (or ``tmux attach-session``) to connect later::
+    ``ianux attach`` (or ``tmux attach-session``) to connect later::
 
-        tmw session -d --panes 4 --init-command 'p4init'
+        ianux session -d --panes 4 --init-command 'p4init'
 
 run  (r)
     Create a new detached tmux session and send one or more shell commands
@@ -148,9 +148,9 @@ def _normalize_argv(argv: list[str]) -> list[str]:
     Empty argv shows top-level help so that bare invocation is informative
     rather than dropping silently into the interactive session flow.
 
-    This lets callers continue to use ``tmw --panes 6`` without
-    any change while also supporting ``tmw session --panes 6``
-    and ``tmw run ...``.
+    This lets callers continue to use ``ianux --panes 6`` without
+    any change while also supporting ``ianux session --panes 6``
+    and ``ianux run ...``.
     """
     if not argv:
         return ["--help"]
@@ -166,7 +166,7 @@ def _normalize_argv(argv: list[str]) -> list[str]:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="tmw",
+        prog="ianux",
         description="tmux session utilities.",
     )
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
@@ -269,7 +269,7 @@ def _add_session_subparser(subparsers) -> None:
         help=(
             "Create and initialise the session but do not attach to it."
             " The session runs in the background; attach later with"
-            " 'tmw attach' or 'tmux attach-session -t <name>'."
+            " 'ianux attach' or 'tmux attach-session -t <name>'."
         ),
     )
 
@@ -291,9 +291,9 @@ def _add_run_subparser(subparsers) -> None:
             "positional looks like a shell command), a name is generated\n"
             "automatically as job_DDHHMMSS.\n\n"
             "Examples:\n"
-            "  tmw run build  make clean  make all\n"
-            "  tmw run mybuild  make clean  make all\n"
-            "  tmw run --session mybuild  make clean  make all"
+            "  ianux run build  make clean  make all\n"
+            "  ianux run mybuild  make clean  make all\n"
+            "  ianux run --session mybuild  make clean  make all"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -352,14 +352,14 @@ def _add_attach_subparser(subparsers) -> None:
             "With SESSION, the picker is skipped and that address is attached\n"
             "directly — useful for scripting or when the name is known.\n"
             "SESSION may be a literal name, the numeric ID shown by\n"
-            "'tmw list' or the interactive picker, and may optionally\n"
+            "'ianux list' or the interactive picker, and may optionally\n"
             "be followed by :WINDOW or :WINDOW.PANE (tmux's own indices, also\n"
             "shown by 'list') to attach directly to that window/pane.\n\n"
             "Examples:\n"
-            "  tmw attach\n"
-            "  tmw attach tmw-session-name\n"
-            "  tmw attach 2\n"
-            "  tmw attach 2:1.0"
+            "  ianux attach\n"
+            "  ianux attach ianux-session-name\n"
+            "  ianux attach 2\n"
+            "  ianux attach 2:1.0"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -395,18 +395,18 @@ def _add_kill_subparser(subparsers) -> None:
             "  SESSION:WINDOW.*   kill every pane in a window\n"
             "                     (you will be asked whether to keep one open)\n\n"
             "SESSION may be a literal name or the numeric ID shown by\n"
-            "'tmw list' or the interactive picker (same IDs used by\n"
+            "'ianux list' or the interactive picker (same IDs used by\n"
             "'attach').  WINDOW and PANE are tmux's own indices.\n\n"
             "Without TARGET an interactive numbered list is shown so you can\n"
             "kill sessions one at a time.  Enter 'q', 'done', or press Enter\n"
             "to stop; the loop also exits when no sessions remain.\n\n"
             "Examples\n"
             "--------\n"
-            "  tmw k abc        # kill session 'abc'\n"
-            "  tmw k 2          # kill session with ID 2 (from 'list')\n"
-            "  tmw k 2:0        # kill window 0 of session ID 2\n"
-            "  tmw k 2:0.1      # kill pane 1 in window 0 of session ID 2\n"
-            "  tmw k test:0.*   # kill all panes in window 0 of 'test'"
+            "  ianux k abc        # kill session 'abc'\n"
+            "  ianux k 2          # kill session with ID 2 (from 'list')\n"
+            "  ianux k 2:0        # kill window 0 of session ID 2\n"
+            "  ianux k 2:0.1      # kill pane 1 in window 0 of session ID 2\n"
+            "  ianux k test:0.*   # kill all panes in window 0 of 'test'"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -479,9 +479,9 @@ def _add_load_subparser(subparsers) -> None:
             "  [[window]]\n"
             "  name = \"logs\"\n"
             "  panes = 1\n\n"
-            "  tmw load myproject.toml\n"
-            "  tmw load --select-config\n"
-            "  tmw load --select-config myproject.toml"
+            "  ianux load myproject.toml\n"
+            "  ianux load --select-config\n"
+            "  ianux load --select-config myproject.toml"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -535,9 +535,9 @@ def _add_dump_subparser(subparsers) -> None:
             "which is created automatically if it doesn't exist yet.\n\n"
             "Examples\n"
             "--------\n"
-            "  tmw dump\n"
-            "  tmw dump my-session\n"
-            "  tmw dump 2 -o ~/configs      # writes ~/configs/<session>.toml"
+            "  ianux dump\n"
+            "  ianux dump my-session\n"
+            "  ianux dump 2 -o ~/configs      # writes ~/configs/<session>.toml"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

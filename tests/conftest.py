@@ -1,4 +1,4 @@
-"""Shared fixtures and helpers for tmw tests."""
+"""Shared fixtures and helpers for ianux tests."""
 
 import os
 import pty
@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tmw.tmux import TmuxClient
+from ianux.tmux import TmuxClient
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -45,10 +45,10 @@ def mock_client():
     return MagicMock(spec=TmuxClient)
 
 
-def run_tmw(*args: str, input: str | None = None) -> subprocess.CompletedProcess:
-    """Invoke the real tmw CLI as a subprocess (for E2E tests) and return the result."""
+def run_ianux(*args: str, input: str | None = None) -> subprocess.CompletedProcess:
+    """Invoke the real ianux CLI as a subprocess (for E2E tests) and return the result."""
     return subprocess.run(
-        [sys.executable, "-m", "tmw", *args],
+        [sys.executable, "-m", "ianux", *args],
         input=input,
         capture_output=True,
         text=True,
@@ -63,7 +63,7 @@ def e2e_session_name():
     (/tmp/<name>.capture-pane, /tmp/<name>.monitor.log) if a test created
     them — harmless no-op for tests that never do.
     """
-    name = f"tmw-e2e-{uuid.uuid4().hex[:8]}"
+    name = f"ianux-e2e-{uuid.uuid4().hex[:8]}"
     yield name
     subprocess.run(["tmux", "kill-session", "-t", name], check=False, capture_output=True)
     Path(f"/tmp/{name}.capture-pane").unlink(missing_ok=True)
@@ -94,7 +94,7 @@ def session_index(name: str) -> int:
 
 
 class AttachedProcess:
-    """A `tmw attach`/`tmw session` subprocess running on a real pty.
+    """A `ianux attach`/`ianux session` subprocess running on a real pty.
 
     tmux's attach-session needs an actual terminal (capture_output=False in
     TmuxClient.attach); a plain subprocess pipe makes it fail immediately
@@ -128,8 +128,8 @@ class AttachedProcess:
             os.close(self._master_fd)
 
 
-def run_tmw_attached(*args: str, input: str | None = None) -> AttachedProcess:
-    """Launch `python -m tmw <args>` on a pty so a real `tmux attach-session` can succeed.
+def run_ianux_attached(*args: str, input: str | None = None) -> AttachedProcess:
+    """Launch `python -m ianux <args>` on a pty so a real `tmux attach-session` can succeed.
 
     When *input* is given, it's written to the pty immediately — used to
     drive an interactive picker prompt that runs before the attach itself.
@@ -137,7 +137,7 @@ def run_tmw_attached(*args: str, input: str | None = None) -> AttachedProcess:
     master_fd, slave_fd = pty.openpty()
     env = dict(os.environ, TERM=os.environ.get("TERM") or "xterm")
     proc = subprocess.Popen(
-        [sys.executable, "-m", "tmw", *args],
+        [sys.executable, "-m", "ianux", *args],
         stdin=slave_fd, stdout=slave_fd, stderr=slave_fd, env=env,
     )
     os.close(slave_fd)

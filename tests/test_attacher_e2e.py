@@ -1,7 +1,7 @@
 """E2E tests for the 'attach' subcommand against a real tmux server.
 
 Attaching needs a real terminal (TmuxClient.attach uses capture_output=False),
-so these tests run the CLI on a pty via run_tmw_attached() and verify the
+so these tests run the CLI on a pty via run_ianux_attached() and verify the
 real attach happened (and landed on the right window/pane) with independent
 `tmux` queries, then detach by terminating the client process.
 """
@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from .conftest import run_tmw, run_tmw_attached, session_index
+from .conftest import run_ianux, run_ianux_attached, session_index
 
 pytestmark = [
     pytest.mark.e2e,
@@ -60,7 +60,7 @@ def _wait_until(predicate, timeout: float = 2.0, interval: float = 0.05) -> bool
 class TestAttachDirect:
     def test_attaches_by_literal_session_name(self, e2e_session_name):
         _create_session(e2e_session_name)
-        attached = run_tmw_attached("attach", e2e_session_name)
+        attached = run_ianux_attached("attach", e2e_session_name)
         try:
             assert _wait_until(lambda: _is_attached(e2e_session_name))
         finally:
@@ -70,7 +70,7 @@ class TestAttachDirect:
         """Resolves the numeric ID shown by 'list' back to this session's real name."""
         _create_session(e2e_session_name)
         idx = session_index(e2e_session_name)
-        attached = run_tmw_attached("attach", str(idx))
+        attached = run_ianux_attached("attach", str(idx))
         try:
             assert _wait_until(lambda: _is_attached(e2e_session_name))
         finally:
@@ -78,7 +78,7 @@ class TestAttachDirect:
 
     def test_attaches_directly_to_a_window_target(self, e2e_session_name):
         _create_session(e2e_session_name, windows=2)
-        attached = run_tmw_attached("attach", f"{e2e_session_name}:1")
+        attached = run_ianux_attached("attach", f"{e2e_session_name}:1")
         try:
             assert _wait_until(lambda: _current_window(e2e_session_name) == "1")
         finally:
@@ -86,7 +86,7 @@ class TestAttachDirect:
 
     def test_attaches_directly_to_a_pane_target(self, e2e_session_name):
         _create_session(e2e_session_name, panes_in_window_0=2)
-        attached = run_tmw_attached("attach", f"{e2e_session_name}:0.1")
+        attached = run_ianux_attached("attach", f"{e2e_session_name}:0.1")
         try:
             assert _wait_until(lambda: _current_pane(e2e_session_name) == "1")
         finally:
@@ -94,7 +94,7 @@ class TestAttachDirect:
 
     def test_raises_when_session_missing(self, e2e_session_name):
         # e2e_session_name is unique and never created here — guaranteed absent.
-        result = run_tmw("attach", e2e_session_name)
+        result = run_ianux("attach", e2e_session_name)
         assert result.returncode != 0
         assert "does not exist" in result.stderr
 
@@ -103,7 +103,7 @@ class TestAttachInteractive:
     def test_picks_and_attaches_by_computed_index(self, e2e_session_name):
         _create_session(e2e_session_name)
         idx = session_index(e2e_session_name)
-        attached = run_tmw_attached("attach", input=f"{idx}\n")
+        attached = run_ianux_attached("attach", input=f"{idx}\n")
         try:
             assert _wait_until(lambda: _is_attached(e2e_session_name))
         finally:

@@ -16,7 +16,7 @@ from .exceptions import AppError
 _DEFAULT_INIT_COMMAND = "p4init"
 _DEFAULT_PANES = 4
 _MAX_PANES = 256
-_DEFAULT_CONFIG_DIR = Path.home() / ".config" / "tmw" / "sessions"
+_DEFAULT_CONFIG_DIR = Path.home() / ".config" / "ianux" / "sessions"
 
 
 @dataclass

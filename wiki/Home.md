@@ -1,6 +1,6 @@
-# TMW Wiki
+# Ianux Wiki
 
-TMW is a command-line wrapper for common [tmux](https://github.com/tmux/tmux) session workflows. It can create multi-window, multi-pane workspaces, launch detached commands, list and attach to sessions, close sessions or panes, and save or restore session layouts.
+Ianux is a command-line wrapper for common [tmux](https://github.com/tmux/tmux) session workflows. It can create multi-window, multi-pane workspaces, launch detached commands, list and attach to sessions, close sessions or panes, and save or restore session layouts.
 
 ## Wiki pages
 
@@ -16,8 +16,8 @@ Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/), and `tmux` availab
 
 ```bash
 uv tool install .
-tmw --help
-tmw session --panes 4
+ianux --help
+ianux session --panes 4
 ```
 
 For a checkout-local environment, use `uv sync` and prefix commands with `uv run`.
@@ -34,4 +34,4 @@ For a checkout-local environment, use `uv sync` and prefix commands with `uv run
 | `load` | `l` | Create a workspace from TOML |
 | `dump` | `d` | Save pane directories from a session as TOML |
 
-Run `tmw <command> --help` for current options. The [command reference](Commands.md) describes the main workflows and addressing rules.
+Run `ianux <command> --help` for current options. The [command reference](Commands.md) describes the main workflows and addressing rules.

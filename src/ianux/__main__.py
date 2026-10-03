@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.11
-"""Entry point for `python -m tmw`.
+"""Entry point for `python -m ianux`.
 
 main() accepts an optional argv list so callers (tests, scripts) can drive
 the tool without touching sys.argv.  entrypoint() wraps main() with error

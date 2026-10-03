@@ -1,30 +1,30 @@
 <div align="center">
-  <img src="assets/tmw-logo.png" alt="TMW logo" width="180">
-  <h1>TMW</h1>
+  <img src="assets/ianux-logo.png" alt="Ianux logo" width="180">
+  <h1>Ianux</h1>
   <p>A quick-to-use tmux wrapper for managing sessions.</p>
 </div>
 
-TMW is a Python command-line tool for creating and restoring multi-window,
-multi-pane tmux sessions, running detached jobs, and listing, attaching to, or
-closing sessions. It requires Python 3.11+, [uv](https://docs.astral.sh/uv/),
-and `tmux` on `PATH`.
+Ianux is a quick-to-use Python command-line tool for creating and restoring
+multi-window, multi-pane tmux sessions, running detached jobs, and listing,
+attaching to, or closing sessions. It requires Python 3.11+,
+[uv](https://docs.astral.sh/uv/), and `tmux` on `PATH`.
 
 ## Quick start
 
-Install TMW as a standalone command:
+Install Ianux as a standalone command:
 
 ```bash
 uv tool install .
-tmw --help
-tmw session --panes 4
+ianux --help
+ianux session --panes 4
 ```
 
 Or run it from a checkout:
 
 ```bash
 uv sync
-uv run tmw --help
-uv run tmw session --panes 4
+uv run ianux --help
+uv run ianux session --panes 4
 ```
 
 ## Commands
@@ -39,7 +39,7 @@ uv run tmw session --panes 4
 | `load` | `l` | Create a session from TOML |
 | `dump` | `d` | Save a session's pane directories to TOML |
 
-Run `tmw <command> --help` for options and examples. See the [wiki](wiki/Home.md)
+Run `ianux <command> --help` for options and examples. See the [wiki](wiki/Home.md)
 for the [full command reference](wiki/Commands.md), [TOML configuration guide](wiki/Configuration.md),
 and [architecture](wiki/Architecture.md).
 

@@ -1,13 +1,13 @@
-"""Tests for tmw.loader."""
+"""Tests for ianux.loader."""
 
 import re
 from pathlib import Path
 
 import pytest
 
-from tmw.config import LoadConfig, SessionConfig, WindowConfig
-from tmw.exceptions import AppError
-from tmw.loader import load_session_config
+from ianux.config import LoadConfig, SessionConfig, WindowConfig
+from ianux.exceptions import AppError
+from ianux.loader import load_session_config
 
 
 def _write(tmp_path: Path, text: str) -> LoadConfig:

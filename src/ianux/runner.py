@@ -30,15 +30,15 @@ Why a sentinel instead of polling pane_current_command?
 Why exact-line matching for the sentinel?
   When ``send_keys`` writes keystrokes, the PTY driver echoes each character
   immediately into the pane — before the shell executes anything.  The echoed
-  command text ``echo __tmw_job_done__`` therefore appears in the
+  command text ``echo __ianux_job_done__`` therefore appears in the
   pane the instant ``send_keys`` returns and *contains* the sentinel as a
   substring.  A naïve ``_SENTINEL in raw`` check would match this echo and
   return prematurely, killing the session before any user command runs.
 
   Exact-line matching (``.strip() == _SENTINEL``) distinguishes the two:
 
-  * ``echo __tmw_job_done__``  — command echo; **not** a match
-  * ``__tmw_job_done__``        — actual echo output; **match**
+  * ``echo __ianux_job_done__``  — command echo; **not** a match
+  * ``__ianux_job_done__``        — actual echo output; **match**
 """
 
 import os
@@ -57,7 +57,7 @@ _DEFAULT_PANE = "0"
 
 # Sentinel written to the pane after all user commands to signal completion.
 # Distinctive enough that it won't appear in normal command output.
-_SENTINEL = "__tmw_job_done__"
+_SENTINEL = "__ianux_job_done__"
 
 _POLL_INTERVAL_S: float = 2.0
 _POLL_TIMEOUT_S: float = 3600.0  # 1-hour ceiling
@@ -128,7 +128,7 @@ class SessionRunner:
 
         ``send_keys`` writes keystrokes to the PTY master.  The PTY driver
         immediately echoes every character back into the pane (terminal echo),
-        so the command text ``echo __tmw_job_done__`` is visible in
+        so the command text ``echo __ianux_job_done__`` is visible in
         the pane the instant the keys are sent — before the shell has started
         executing *anything*.  That echoed line **contains** the sentinel
         string and would cause a naïve ``_SENTINEL in raw`` check to return
@@ -137,8 +137,8 @@ class SessionRunner:
         Exact-line matching (``.strip() == _SENTINEL``) distinguishes the
         two cases:
 
-        * ``echo __tmw_job_done__``  — command echo; **not** a match
-        * ``__tmw_job_done__``        — actual echo output; **match**
+        * ``echo __ianux_job_done__``  — command echo; **not** a match
+        * ``__ianux_job_done__``        — actual echo output; **match**
 
         The sentinel output only appears after the shell has finished every
         preceding command and executed ``echo <sentinel>``, so the match is a
@@ -164,7 +164,7 @@ class SessionRunner:
             lines = raw.splitlines()
             if any(line.strip() == _SENTINEL for line in lines):
                 # Strip the sentinel output line and the echoed command line —
-                # both are tmw artefacts, not user output.
+                # both are ianux artefacts, not user output.
                 clean = "\n".join(
                     line
                     for line in lines

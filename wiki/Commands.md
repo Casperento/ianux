@@ -78,7 +78,7 @@ Targets use `SESSION`, `SESSION:WINDOW`, `SESSION:WINDOW.PANE`, or `SESSION:WIND
 
 ```bash
 ianux load project.toml
-ianux load --select-config
+ianux load
 ianux dump my-session
 ianux dump my-session --output ~/configs
 ```

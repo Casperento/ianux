@@ -45,10 +45,10 @@ Unknown keys at the top level, window level, or pane level are rejected to help 
 ## Select a config interactively
 
 ```bash
-ianux load --select-config
+ianux load
 ```
 
-This lists TOML files in `~/.config/ianux/sessions/`. If that directory does not exist, Ianux creates it and seeds it with `demo.toml`. An existing directory, including an empty one, is left as-is. You can also provide a TOML path with `--select-config`; in that case the path is loaded directly without prompting.
+With no file path, `load` lists TOML files in `~/.config/ianux/sessions/` and prompts you to pick one. If that directory does not exist, Ianux creates it and seeds it with `demo.toml`. An existing directory, including an empty one, is left as-is. To load a specific file without prompting, pass its path to `load`.
 
 ## Dumping sessions
 
@@ -57,6 +57,6 @@ ianux dump my-session
 ianux dump my-session --output ~/configs
 ```
 
-The `--output` value is a directory; the output filename is derived from the session name. By default, files go to `~/.config/ianux/sessions/`, where they can be selected by `load --select-config`.
+The `--output` value is a directory; the output filename is derived from the session name. By default, files go to `~/.config/ianux/sessions/`, where they can be selected by running `load` without a file path.
 
 Dumped files include the session name, each window's reported name, pane count, and pane directories. `init_command` is written as an empty string because a running pane's original startup command cannot be recovered. `detach` is omitted because it is not a property recoverable from the live session. Edit the generated file to add startup commands or adjust window names before reloading if needed.

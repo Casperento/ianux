@@ -42,8 +42,8 @@ the same ``build_resolver()`` + ``SessionManager`` path used by the
 
 Interactive selection
 ----------------------
-When ``config.path`` is ``None`` (the CLI's ``--select-config`` given with
-no inline value), ``load_session_config()`` lists the ``*.toml`` files in
+When ``config.path`` is ``None`` (no ``TOML_FILE`` was given),
+``load_session_config()`` lists the ``*.toml`` files in
 ``_DEFAULT_CONFIG_DIR`` and prompts the user to pick one, mirroring the
 numbered-picker UX used by ``attach``/``kill``. The very first time
 ``_DEFAULT_CONFIG_DIR`` itself is created, it's seeded with a ``demo.toml``
@@ -72,7 +72,7 @@ _ALLOWED_WINDOW_KEYS = frozenset({"name", "panes", "pane"})
 _ALLOWED_PANE_KEYS = frozenset({"directory", "init_command"})
 
 # Mirrors the "Example" in the 'load --help' description — seeded into a
-# fresh _DEFAULT_CONFIG_DIR so '--select-config' has something to pick on a
+# fresh _DEFAULT_CONFIG_DIR so 'load' has something to pick on a
 # first run instead of an empty list.
 _DEMO_TOML = """\
 session_name = "demo"
@@ -173,7 +173,7 @@ def _select_config_path(config_dir: Path, prompt_fn: Callable[[str], str]) -> Pa
     *config_dir* is created (including parents) if it doesn't exist yet —
     mirrors 'dump', which creates the same directory when writing to it. The
     very first time the directory itself is created, it's seeded with
-    'demo.toml' (see _DEMO_TOML) so a first-time '--select-config' has
+    'demo.toml' (see _DEMO_TOML) so a first-time 'load' has
     something to pick instead of an empty list. An already-existing
     directory (even an empty one) is left alone.
     """

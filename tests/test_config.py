@@ -29,7 +29,7 @@ class TestBuildWindowConfig:
 
     def test_empty_init_commands_default(self):
         win = build_window_config(panes=4, directories=[], init_commands=[])
-        assert win.init_commands == ["p4init"]
+        assert win.init_commands == ["echo Hello"]
 
     @pytest.mark.parametrize("panes", [0, 999])
     def test_panes_out_of_range_raises(self, panes):

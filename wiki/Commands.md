@@ -24,7 +24,7 @@ ianux session --window-panes 2 --window-name editor \
   --window-panes 1 --window-name logs
 ```
 
-`--panes` sets the pane count for a single window (1–256). For multiple windows, repeat `--window-panes`; optionally repeat `--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and `p4init`.
+`--panes` sets the pane count for a single window (1–256). For multiple windows, repeat `--window-panes`; optionally repeat `--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and `echo Hello`.
 
 Use `--session-name NAME` to choose an exact name, `--detach` to create without attaching, and `--init-command CMD` to set commands run after changing into each pane's directory. The default command is `session`, so `ianux --panes 6` is equivalent to `ianux session --panes 6`.
 

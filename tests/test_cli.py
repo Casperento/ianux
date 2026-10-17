@@ -296,23 +296,10 @@ class TestParseArgsLoad:
         assert isinstance(cfg, LoadConfig)
         assert cfg.path == Path("myproject.toml")
 
-    def test_load_requires_path_or_select_config(self):
-        with pytest.raises(SystemExit):
-            parse_args(["load"])
-
-    def test_select_config_bare_triggers_interactive(self):
-        cfg = parse_args(["load", "--select-config"])
+    def test_load_without_path_triggers_interactive_picker(self):
+        cfg = parse_args(["load"])
         assert isinstance(cfg, LoadConfig)
         assert cfg.path is None
-
-    def test_select_config_with_value_is_direct_path(self):
-        cfg = parse_args(["load", "--select-config", "myproject.toml"])
-        assert isinstance(cfg, LoadConfig)
-        assert cfg.path == Path("myproject.toml")
-
-    def test_path_and_select_config_together_is_error(self):
-        with pytest.raises(SystemExit):
-            parse_args(["load", "myproject.toml", "--select-config"])
 
 
 # ---------------------------------------------------------------------------

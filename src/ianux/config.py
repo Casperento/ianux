@@ -167,9 +167,9 @@ class LoadConfig:
     (panes, session_name, detach, and one [[pane]] table per pane) — see
     loader.py for the full schema and defaulting rules.
 
-    When *path* is None (selected via '--select-config' with no inline
-    value), loader.py prompts the user to pick a file from
-    _DEFAULT_CONFIG_DIR instead of reading a path given directly on the CLI.
+    When *path* is None (no TOML_FILE given), loader.py prompts the user to
+    pick a file from _DEFAULT_CONFIG_DIR instead of reading a path given
+    directly on the CLI.
     """
 
     path: Path | None = None

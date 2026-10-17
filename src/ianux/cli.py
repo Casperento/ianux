@@ -60,8 +60,8 @@ kill  (k)
 load  (l)
     Load a TOML file describing a 'session' configuration (one or more
     windows, each with its own panes) and create/attach the session exactly
-    as 'session' would.  TOML_FILE may be given directly, or picked
-    interactively with '--select-config' (see below).
+    as 'session' would.  TOML_FILE may be given directly; without it, pick
+    a file interactively from the default config directory.
 
 dump  (d)
     Save an existing session's windows/panes/working-directories to a TOML
@@ -442,10 +442,12 @@ def _add_load_subparser(subparsers) -> None:
     p = subparsers.add_parser(
         "load",
         aliases=["l"],
-        help="Create a session from a TOML config file.",
+        help="Create a session from a TOML config file or pick one interactively.",
         description=(
             "Load a TOML file describing a 'session' subcommand configuration\n"
-            "and create/attach the session exactly as 'session' would.\n\n"
+            "and create/attach the session exactly as 'session' would. Omit\n"
+            "TOML_FILE to pick a config interactively from the default\n"
+            f"directory ({_DEFAULT_CONFIG_DIR}).\n\n"
             "Schema\n"
             "------\n"
             "  session_name    optional string, default: auto-generated (e.g. job_DDHHMMSS)\n"
@@ -461,9 +463,6 @@ def _add_load_subparser(subparsers) -> None:
             "panes of that window.  Extra tables beyond 'panes' are simply\n"
             "unused.  Omitting [[window]] entirely produces a single default\n"
             "window (panes=4, cwd, 'echo Hello').\n\n"
-            "TOML_FILE and --select-config are mutually exclusive: give exactly\n"
-            "one, or use --select-config with no value to pick a file\n"
-            f"interactively from {_DEFAULT_CONFIG_DIR}.\n\n"
             "Example\n"
             "-------\n"
             "  session_name = \"demo\"\n\n"
@@ -480,8 +479,7 @@ def _add_load_subparser(subparsers) -> None:
             "  name = \"logs\"\n"
             "  panes = 1\n\n"
             "  ianux load myproject.toml\n"
-            "  ianux load --select-config\n"
-            "  ianux load --select-config myproject.toml"
+            "  ianux load"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -491,22 +489,7 @@ def _add_load_subparser(subparsers) -> None:
         nargs="?",
         default=None,
         metavar="TOML_FILE",
-        help="Path to the TOML config file. Omit and use --select-config instead.",
-    )
-    p.add_argument(
-        "--select-config",
-        nargs="?",
-        const="",
-        default=None,
-        dest="select_config",
-        metavar="PATH",
-        help=(
-            "Pick a config interactively from"
-            f" {_DEFAULT_CONFIG_DIR} when given with no value"
-            " (seeded with a demo.toml the first time that directory is"
-            " created), or load PATH directly when a value is given."
-            " Mutually exclusive with TOML_FILE."
-        ),
+        help="Path to the TOML config file. Omit to pick one interactively.",
     )
 
 
@@ -592,7 +575,7 @@ def parse_args(
     if namespace_parsed.command == "list":
         return ListConfig()
     if namespace_parsed.command == "load":
-        return _parse_load_config(arg_parser, namespace_parsed)
+        return _parse_load_config(namespace_parsed)
     if namespace_parsed.command == "dump":
         return DumpConfig(
             session_name=namespace_parsed.session_name,
@@ -729,21 +712,8 @@ def _parse_run_config(
     )
 
 
-def _parse_load_config(
-    parser: argparse.ArgumentParser, parsed: argparse.Namespace
-) -> LoadConfig:
-    positional: Path | None = parsed.path
-    select: str | None = parsed.select_config
-
-    if positional is not None and select is not None:
-        parser.error("load: specify TOML_FILE or --select-config, not both.")
-    if select == "":
-        return LoadConfig(path=None)
-    if select is not None:
-        return LoadConfig(path=Path(select))
-    if positional is None:
-        parser.error("load: provide TOML_FILE or --select-config.")
-    return LoadConfig(path=positional)
+def _parse_load_config(parsed: argparse.Namespace) -> LoadConfig:
+    return LoadConfig(path=parsed.path)
 
 
 def _parse_attach_config(parsed: argparse.Namespace) -> AttachConfig:

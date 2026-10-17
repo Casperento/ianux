@@ -13,7 +13,7 @@ Schema
 
     [[window.pane]]
     directory = "~/src/frontend"     # optional, default: current working directory
-    init_command = "npm run dev"     # optional, default: "p4init"
+    init_command = "npm run dev"     # optional, default: "echo Hello"
 
     [[window.pane]]
     directory = "~/src/backend"
@@ -31,9 +31,9 @@ subcommand, but scoped to the window: when a window's ``panes`` exceeds the
 number of its ``[[window.pane]]`` tables, the last table's values are reused
 for the remaining panes of *that window*; extra tables beyond ``panes`` are
 simply unused. Omitting ``[[window.pane]]`` entirely falls back to the
-current working directory / ``"p4init"`` for that window. Omitting
+current working directory / ``"echo Hello"`` for that window. Omitting
 ``[[window]]`` entirely produces a single default window (panes=4, cwd,
-``"p4init"``), exactly like omitting ``-C``/``-c``/``--window-panes`` on the
+``"echo Hello"``), exactly like omitting ``-C``/``-c``/``--window-panes`` on the
 CLI.
 
 This module only builds the SessionConfig; ``__main__.py`` runs it through

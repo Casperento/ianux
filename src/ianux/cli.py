@@ -39,7 +39,7 @@ session  (s)  — default
     attaching.  The session runs in the background; use
     ``ianux attach`` (or ``tmux attach-session``) to connect later::
 
-        ianux session -d --panes 4 --init-command 'p4init'
+        ianux session -d --panes 4 --init-command 'echo Hello'
 
 run  (r)
     Create a new detached tmux session and send one or more shell commands
@@ -457,12 +457,12 @@ def _add_load_subparser(subparsers) -> None:
             "    panes          optional int, default 4\n"
             "    [[window.pane]] zero or more tables, one per pane:\n"
             "      directory      optional string, default: current working directory\n"
-            "      init_command   optional string, default: 'p4init'\n\n"
+            "      init_command   optional string, default: 'echo Hello'\n\n"
             "When a window's 'panes' exceeds the number of its [[window.pane]]\n"
             "tables, the last table's values are reused for the remaining\n"
             "panes of that window.  Extra tables beyond 'panes' are simply\n"
             "unused.  Omitting [[window]] entirely produces a single default\n"
-            "window (panes=4, cwd, 'p4init').\n\n"
+            "window (panes=4, cwd, 'echo Hello').\n\n"
             "Example\n"
             "-------\n"
             "  session_name = \"demo\"\n\n"
@@ -613,7 +613,7 @@ def _slice_by_window(flat: list[_T], window_panes: list[int]) -> list[list[_T]]:
     exhausted before a window's turn does that window fall back to a
     single-item chunk carrying the last value handed out — this is what
     lets reuse-last cross a window boundary instead of resetting to that
-    window's cwd/p4init default.
+    window's cwd/echo Hello default.
     """
     windows: list[list[_T]] = []
     idx = 0

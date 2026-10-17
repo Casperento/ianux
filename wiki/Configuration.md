@@ -34,7 +34,7 @@ init_command = "bash"
 - Top-level `session_name` is an optional string; if omitted, Ianux generates a name such as `job_DDHHMMSS`.
 - Top-level `detach` is an optional boolean and defaults to `false`.
 - Each `[[window]]` table defines one window. `name` is optional; `panes` is an optional integer defaulting to 4.
-- Each `[[window.pane]]` table supplies an optional `directory` and `init_command` for one pane. Their defaults are the current working directory and `p4init`.
+- Each `[[window.pane]]` table supplies an optional `directory` and `init_command` for one pane. Their defaults are the current working directory and `echo Hello`.
 - Pane tables are ordered within each window. If a window has more panes than pane tables, the final table's values are reused for the remaining panes in that window.
 - Pane tables beyond a window's `panes` count are ignored.
 - If a window has no pane tables, all its panes use the default directory and command.

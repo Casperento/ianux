@@ -11,6 +11,7 @@ detach = false         # optional; defaults to false
 [[window]]
 name = "editor"       # optional; tmux chooses a default if omitted
 panes = 2              # optional; defaults to 4
+split_direction = "vertical" # optional; side-by-side (default: "horizontal")
 
 [[window.pane]]
 directory = "~/src/frontend"
@@ -34,6 +35,7 @@ init_command = "bash"
 - Top-level `session_name` is an optional string; if omitted, Ianux generates a name such as `job_DDHHMMSS`.
 - Top-level `detach` is an optional boolean and defaults to `false`.
 - Each `[[window]]` table defines one window. `name` is optional; `panes` is an optional integer defaulting to 4.
+- `split_direction` is optional and defaults to `"horizontal"`, which makes the first split top-to-bottom. Set it to `"vertical"` to make the first split side-by-side. The next split uses the other axis: pane three splits the second pane, and pane four splits the original pane, forming four equal quadrants. For more than four panes, Ianux uses a tiled layout while subdividing the quadrants.
 - Each `[[window.pane]]` table supplies an optional `directory` and `init_command` for one pane. Their defaults are the current working directory and `echo Hello`.
 - Pane tables are ordered within each window. If a window has more panes than pane tables, the final table's values are reused for the remaining panes in that window.
 - Pane tables beyond a window's `panes` count are ignored.

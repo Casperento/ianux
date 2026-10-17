@@ -141,18 +141,27 @@ class TmuxClient:
         pane_number: int,
         window: str = "0",
         target_pane: str | None = None,
+        direction: str = "horizontal",
     ) -> None:
         """Split a window to add one pane.
 
         *target_pane* is the pane index string (e.g. ``"2"``) of the pane to
         split.  When omitted, tmux splits whichever pane is currently active,
-        which is fine for the initial sequential creation pass.
+        which is fine for the initial sequential creation pass. ``horizontal``
+        stacks panes top-to-bottom using tmux's default split; ``vertical``
+        places them side-by-side using tmux's ``-h`` flag.
         """
         if target_pane is not None:
             target = f"{session}:{window}.{target_pane}"
         else:
             target = f"{session}:{window}"
-        result = self._tmux(["split-window", "-t", target])
+        args = ["split-window"]
+        if direction == "vertical":
+            args.append("-h")
+        elif direction != "horizontal":
+            raise AppError("split direction must be 'horizontal' or 'vertical'.")
+        args += ["-t", target]
+        result = self._tmux(args)
         if result.returncode != 0:
             raise AppError(
                 f"Failed while creating pane {pane_number} in session '{session}'."

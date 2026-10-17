@@ -9,7 +9,7 @@ responsibility to orchestration only.
 import shlex
 from pathlib import Path
 
-from .config import SessionConfig
+from .config import _DEFAULT_SPLIT_DIRECTION, SessionConfig
 from .directory import DirectoryResolver, ExplicitResolver
 from .tmux import TmuxClient
 
@@ -40,13 +40,17 @@ class SessionManager:
         session_name = self._unique_session_name(config.session_name)
 
         self._client.new_session(session_name, window_name=first_window.name)
-        self._create_panes(session_name, "0", first_window.panes)
+        self._create_panes(
+            session_name, "0", first_window.panes, first_window.split_direction
+        )
         self._initialize_panes(session_name, "0", first_directories, first_window.init_commands)
 
         for window in config.windows[1:]:
             window_index = self._client.new_window(session_name, name=window.name)
             window_directories = self._resolve_directories(window.directories)
-            self._create_panes(session_name, window_index, window.panes)
+            self._create_panes(
+                session_name, window_index, window.panes, window.split_direction
+            )
             self._initialize_panes(session_name, window_index, window_directories, window.init_commands)
 
         if len(config.windows) > 1:
@@ -79,53 +83,71 @@ class SessionManager:
         else:
             self._client.attach(session_name)
 
-    # Number of base panes that form the first tiled grid.
-    # Extra panes are added by sub-dividing those base panes rather than by
-    # continuing to split the window sequentially, which would produce an
-    # increasingly narrow column of panes instead of a balanced grid.
-    _BASE_PANE_COUNT = 4
+    def _create_panes(
+        self,
+        session_name: str,
+        window: str,
+        pane_count: int,
+        split_direction: str = _DEFAULT_SPLIT_DIRECTION,
+    ) -> None:
+        """Create panes in an alternating split pattern.
 
-    def _create_panes(self, session_name: str, window: str, pane_count: int) -> None:
-        """Create *pane_count* panes using a two-phase strategy.
-
-        Phase 1 — base grid (≤ _BASE_PANE_COUNT panes)
-            Split the window sequentially and apply a tiled layout.  For
-            requests of four panes or fewer this is the only phase.
-
-        Phase 2 — subdivide base panes (pane_count > _BASE_PANE_COUNT)
-            Query the real pane indices that tmux assigned after the tiled
-            layout, then split those base panes in round-robin order until
-            the total reaches *pane_count*.  Tiled is re-applied after every
-            individual split so that every pane stays at maximum available
-            size — without this rebalance, panes squeezed by earlier splits
-            can fall below tmux's minimum splittable height.
-
-        Example — 6 panes:
-            Phase 1 → panes 0-3 in a 2×2 grid.
-            Phase 2 → split pane 0 (→ pane 4), tiled; split pane 1 (→ pane 5), tiled.
-            Result  → 6 panes, two columns of 3.
+        The first split follows *split_direction*. For pane three, split the
+        second pane across the other axis; for pane four, split the original
+        pane across that same axis. This makes a balanced 2×2 grid. Larger
+        counts use that grid as a base and return to tmux's tiled layout while
+        subdividing its panes to keep further splits viable.
         """
-        base = min(pane_count, self._BASE_PANE_COUNT)
-
-        # ── Phase 1: base grid ──────────────────────────────────────────────
-        for n in range(1, base):
-            self._client.split_window(session_name, n, window=window)
-        self._client.select_layout(session_name, "tiled", window=window)
-
-        if pane_count <= self._BASE_PANE_COUNT:
+        if pane_count <= 1:
             return
 
-        # ── Phase 2: sub-divide base panes ─────────────────────────────────
-        # Fetch real pane indices *after* the layout so we target the correct
-        # panes even if tmux has reordered them internally.
+        other_direction = "horizontal" if split_direction == "vertical" else "vertical"
+
+        # The first split always divides the original pane in half.
+        self._client.split_window(
+            session_name, 2, window=window, direction=split_direction
+        )
+        if pane_count == 2:
+            layout = "even-horizontal" if split_direction == "vertical" else "even-vertical"
+            self._client.select_layout(session_name, layout, window=window)
+            return
+
+        # Split the newly-created pane for pane three, leaving the first pane
+        # at half the window and making the other two panes quarter-sized.
+        pane_indices = self._client.list_panes(session_name, window=window)
+        first_pane = pane_indices[0]
+        second_pane = pane_indices[-1]
+        self._client.split_window(
+            session_name, 3, window=window, target_pane=second_pane,
+            direction=other_direction,
+        )
+
+        if pane_count == 3:
+            return
+
+        # Split the original pane across the same axis to complete four equal
+        # quadrants.
+        self._client.split_window(
+            session_name, 4, window=window, target_pane=first_pane,
+            direction=other_direction,
+        )
+        if pane_count == 4:
+            return
+
+        # For larger counts, rebalance the four-pane base before splitting
+        # each base pane in round-robin order. Re-tiling after each split
+        # keeps subsequent panes large enough to split.
+        self._client.select_layout(session_name, "tiled", window=window)
         base_indices = self._client.list_panes(session_name, window=window)
-        extra = pane_count - base
-        for i in range(extra):
+        for i in range(pane_count - 4):
             target = base_indices[i % len(base_indices)]
-            self._client.split_window(session_name, base + 1 + i, window=window, target_pane=target)
-            # Re-apply tiled immediately so the next targeted pane has the
-            # maximum available height rather than the squeezed height left
-            # over from the split that just happened.
+            self._client.split_window(
+                session_name,
+                5 + i,
+                window=window,
+                target_pane=target,
+                direction=split_direction,
+            )
             self._client.select_layout(session_name, "tiled", window=window)
 
     def _initialize_panes(

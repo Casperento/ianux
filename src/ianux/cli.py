@@ -83,6 +83,7 @@ from .config import (
     _DEFAULT_CONFIG_DIR,
     _DEFAULT_INIT_COMMAND,
     _DEFAULT_PANES,
+    _DEFAULT_SPLIT_DIRECTION,
     AttachConfig,
     DumpConfig,
     KillConfig,
@@ -227,6 +228,18 @@ def _add_session_subparser(subparsers) -> None:
             "Name for one window.  Repeat once per window (in order),"
             " aligned with --window-panes.  Windows without a corresponding"
             " --window-name keep tmux's own default name."
+        ),
+    )
+    p.add_argument(
+        "--split-direction",
+        choices=("horizontal", "vertical"),
+        default=_DEFAULT_SPLIT_DIRECTION,
+        metavar="DIRECTION",
+        help=(
+            "Direction of the first split in every window: horizontal divides"
+            " top-to-bottom; vertical divides side-by-side. The next splits"
+            " alternate axes through four panes"
+            f" (default: {_DEFAULT_SPLIT_DIRECTION})."
         ),
     )
     p.add_argument(
@@ -455,6 +468,7 @@ def _add_load_subparser(subparsers) -> None:
             "  [[window]]      zero or more tables, one per window:\n"
             "    name           optional string, default: tmux's own default\n"
             "    panes          optional int, default 4\n"
+            "    split_direction optional first split axis: 'horizontal' (top/bottom) or 'vertical' (side-by-side), default horizontal\n"
             "    [[window.pane]] zero or more tables, one per pane:\n"
             "      directory      optional string, default: current working directory\n"
             "      init_command   optional string, default: 'echo Hello'\n\n"
@@ -469,6 +483,7 @@ def _add_load_subparser(subparsers) -> None:
             "  [[window]]\n"
             "  name = \"editor\"\n"
             "  panes = 2\n\n"
+            "  split_direction = \"vertical\"  # side-by-side panes\n\n"
             "  [[window.pane]]\n"
             "  directory = \"~/src/frontend\"\n"
             "  init_command = \"npm run dev\"\n\n"
@@ -662,6 +677,7 @@ def _parse_session_config(
                     directories=per_window_directories[i],
                     init_commands=per_window_init_commands[i],
                     name=window_names[i] if i < len(window_names) else None,
+                    split_direction=parsed.split_direction,
                 )
             )
         return build_session_config(

@@ -23,19 +23,29 @@ class TestCreatePanes:
     """Unit-test _create_panes in isolation via mock_client."""
 
     def _run(self, mock_client, pane_count: int, window: str = "0"):
-        mock_client.list_panes.return_value = ["0", "1", "2", "3"]
+        mock_client.list_panes.return_value = (
+            ["0", "1"] if pane_count <= 4 else ["0", "1", "2", "3"]
+        )
         manager = SessionManager(mock_client)
         manager._create_panes("sess", window, pane_count)
 
     def test_single_pane_no_splits(self, mock_client):
         self._run(mock_client, 1)
         mock_client.split_window.assert_not_called()
-        mock_client.select_layout.assert_called_once_with("sess", "tiled", window="0")
+        mock_client.select_layout.assert_not_called()
 
-    def test_four_panes_three_splits_then_tiled(self, mock_client):
+    def test_four_panes_split_perpendicularly_into_equal_quadrants(self, mock_client):
         self._run(mock_client, 4)
-        assert mock_client.split_window.call_count == 3  # 3 extra after initial pane
-        mock_client.select_layout.assert_called_with("sess", "tiled", window="0")
+        assert mock_client.split_window.call_count == 3
+        calls = mock_client.split_window.call_args_list
+        assert calls[0].kwargs == {"window": "0", "direction": "horizontal"}
+        assert calls[1].kwargs == {
+            "window": "0", "target_pane": "1", "direction": "vertical"
+        }
+        assert calls[2].kwargs == {
+            "window": "0", "target_pane": "0", "direction": "vertical"
+        }
+        mock_client.select_layout.assert_not_called()
 
     def test_six_panes_uses_phase2(self, mock_client):
         """6 panes: 3 phase-1 splits (→4 panes) + 2 phase-2 splits."""

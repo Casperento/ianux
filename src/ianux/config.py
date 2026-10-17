@@ -16,6 +16,8 @@ from .exceptions import AppError
 _DEFAULT_INIT_COMMAND = "echo Hello"
 _DEFAULT_PANES = 4
 _MAX_PANES = 256
+_DEFAULT_SPLIT_DIRECTION = "horizontal"
+_SPLIT_DIRECTIONS = frozenset({"horizontal", "vertical"})
 _DEFAULT_CONFIG_DIR = Path.home() / ".config" / "ianux" / "sessions"
 
 
@@ -29,12 +31,16 @@ class WindowConfig:
     (backward-compatible with the old single-value behaviour).
 
     *name* is the tmux window name; None leaves it at tmux's own default.
+    *split_direction* sets the first split axis: ``horizontal`` divides the
+    window top-to-bottom, while ``vertical`` divides it side-by-side. Splits
+    alternate axes to create an evenly divided four-pane grid.
     """
 
     panes: int
     directories: list[Path]
     init_commands: list[str]
     name: str | None = None
+    split_direction: str = _DEFAULT_SPLIT_DIRECTION
 
 
 @dataclass
@@ -59,6 +65,7 @@ def build_window_config(
     directories: list[Path],
     init_commands: list[str],
     name: str | None = None,
+    split_direction: str = _DEFAULT_SPLIT_DIRECTION,
 ) -> WindowConfig:
     """Validate and assemble a WindowConfig from raw, undefaulted inputs.
 
@@ -71,12 +78,16 @@ def build_window_config(
         raise AppError("panes must be >= 1.")
     if panes > _MAX_PANES:
         raise AppError(f"panes must be <= {_MAX_PANES}.")
+    if split_direction not in _SPLIT_DIRECTIONS:
+        choices = ", ".join(sorted(_SPLIT_DIRECTIONS))
+        raise AppError(f"split_direction must be one of: {choices}.")
 
     return WindowConfig(
         panes=panes,
         directories=directories or [Path.cwd()],
         init_commands=init_commands or [_DEFAULT_INIT_COMMAND],
         name=name,
+        split_direction=split_direction,
     )
 
 

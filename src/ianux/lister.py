@@ -21,7 +21,7 @@ _SESSION_RE = re.compile(
     r"^(?P<name>.+?)"
     r":\s*(?P<windows>\d+) windows"
     r"\s+\(created (?P<created>[^)]+)\)"
-    r"\s+\[(?P<size>\d+x\d+)\]"
+    r"(?:\s+\[(?P<size>\d+x\d+)\])?"
 )
 
 _HDR_WIN = "Window(s)/Pane(s)"
@@ -54,7 +54,7 @@ def _parse(line: str) -> _Session | None:
         name    = m.group("name"),
         windows = m.group("windows"),
         created = created,
-        size    = m.group("size"),
+        size    = m.group("size") or "-",
     )
 
 

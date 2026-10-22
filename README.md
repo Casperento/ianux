@@ -1,10 +1,10 @@
 <div align="center">
   <img src="assets/ianux-logo.png" alt="Ianux logo" width="180">
-  <h1>Ianux</h1>
+  <h1>ianux</h1>
   <p>A quick-to-use tmux wrapper for managing sessions.</p>
 </div>
 
-Ianux is a quick-to-use Python command-line tool for creating and restoring
+ianux is a quick-to-use Python command-line tool for creating and restoring
 multi-window, multi-pane tmux sessions, running detached jobs, and listing,
 attaching to, or closing sessions. It requires Python 3.11+,
 [uv](https://docs.astral.sh/uv/), and `tmux` on `PATH`.

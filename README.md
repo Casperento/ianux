@@ -1,6 +1,5 @@
 <div align="center">
   <img src="assets/ianux-logo.png" alt="Ianux logo" width="180">
-  <h1>ianux</h1>
   <p>A quick-to-use tmux wrapper for managing sessions.</p>
 </div>
 

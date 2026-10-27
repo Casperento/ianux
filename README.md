@@ -15,7 +15,7 @@ Install Ianux as a standalone command:
 ```bash
 uv tool install .
 ianux --help
-ianux session --panes 4
+ianux session -p 4
 ```
 
 Or run it from a checkout:
@@ -23,8 +23,17 @@ Or run it from a checkout:
 ```bash
 uv sync
 uv run ianux --help
-uv run ianux session --panes 4
+uv run ianux session -p 4
 ```
+
+In `session` mode, `-p` is the short form of `--window-panes` and `-w` is the
+short form of `--window-name`. Repeat them to configure multiple windows:
+
+```bash
+ianux session -p 2 -w editor -p 1 -w logs
+```
+
+Without `-p`/`--window-panes`, Ianux creates one window with four panes.
 
 ## Commands
 

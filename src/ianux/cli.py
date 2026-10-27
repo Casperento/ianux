@@ -4,14 +4,12 @@ Subcommands
 -----------
 session  (s)  — default
     Create / attach to a multi-window, multi-pane dev tmux session.
-    Existing callers using bare flags (``ianux --panes 6``) are
-    kept working: if the first argument is not a recognised subcommand, the
-    parser silently inserts ``session`` before it.
+    If the first argument is not a recognised subcommand, the parser
+    silently inserts ``session`` before it.
 
     Multiple windows
     ~~~~~~~~~~~~~~~~
-    ``-a/--panes`` (single window, the default) and ``--window-panes``
-    (repeatable, once per window) are mutually exclusive.  ``--window-name``
+    ``--window-panes`` is repeatable, once per window.  ``--window-name``
     optionally names each window, aligned by position with ``--window-panes``.
 
     Per-pane directories and init commands
@@ -39,7 +37,7 @@ session  (s)  — default
     attaching.  The session runs in the background; use
     ``ianux attach`` (or ``tmux attach-session``) to connect later::
 
-        ianux session -d --panes 4 --init-command 'echo Hello'
+        ianux session -d --window-panes 4 --init-command 'echo Hello'
 
 run  (r)
     Create a new detached tmux session and send one or more shell commands
@@ -150,9 +148,8 @@ def _normalize_argv(argv: list[str]) -> list[str]:
     Empty argv shows top-level help so that bare invocation is informative
     rather than dropping silently into the interactive session flow.
 
-    This lets callers continue to use ``ianux --panes 6`` without
-    any change while also supporting ``ianux session --panes 6``
-    and ``ianux run ...``.
+    This supports bare session flags such as ``ianux --window-panes 6``
+    as well as ``ianux session --window-panes 6`` and ``ianux run ...``.
     """
     if not argv:
         return ["--help"]
@@ -204,15 +201,8 @@ def _add_session_subparser(subparsers) -> None:
             " with configurable windows and pane counts."
         ),
     )
-    panes_group = p.add_mutually_exclusive_group()
-    panes_group.add_argument(
-        "-a", "--panes",
-        type=int,
-        default=_DEFAULT_PANES,
-        help="Number of panes to create in the tmux window (default: %(default)s).",
-    )
-    panes_group.add_argument(
-        "--window-panes",
+    p.add_argument(
+        "-p", "--window-panes",
         type=int,
         action="append",
         dest="window_panes",
@@ -220,12 +210,12 @@ def _add_session_subparser(subparsers) -> None:
         metavar="N",
         help=(
             "Pane count for one window.  Repeat once per window (in order) to"
-            " create multiple windows.  Mutually exclusive with -a/--panes"
-            " (which is shorthand for a single window)."
+            " create multiple windows.  Defaults to one window with"
+            f" {_DEFAULT_PANES} panes."
         ),
     )
     p.add_argument(
-        "--window-name",
+        "-w", "--window-name",
         action="append",
         dest="window_names",
         default=None,
@@ -237,7 +227,7 @@ def _add_session_subparser(subparsers) -> None:
         ),
     )
     p.add_argument(
-        "--split-direction",
+        "-s", "--split-direction",
         choices=("horizontal", "vertical"),
         default=_DEFAULT_SPLIT_DIRECTION,
         metavar="DIRECTION",
@@ -654,7 +644,7 @@ def _slice_by_window(flat: list[_T], window_panes: list[int]) -> list[list[_T]]:
 def _parse_session_config(
     parser: argparse.ArgumentParser, parsed: argparse.Namespace
 ) -> SessionConfig:
-    window_panes: list[int] = parsed.window_panes or [parsed.panes]
+    window_panes: list[int] = parsed.window_panes or [_DEFAULT_PANES]
     window_names: list[str] = parsed.window_names or []
 
     if len(window_names) > len(window_panes):

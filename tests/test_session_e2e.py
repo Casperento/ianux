@@ -66,7 +66,7 @@ class TestSessionCreation:
 
         result = run_ianux(
             "session",
-            "--panes", "2",
+            "--window-panes", "2",
             "--session-name", e2e_session_name,
             "--directory", str(dira),
             "--directory", str(dirb),
@@ -137,7 +137,7 @@ class TestDuplicateSessionName:
         d.mkdir()
 
         first = run_ianux(
-            "session", "--panes", "1", "--session-name", e2e_session_name,
+            "session", "--window-panes", "1", "--session-name", e2e_session_name,
             "--directory", str(d), "--init-command", "", "--detach",
         )
         assert first.returncode == 0, first.stderr
@@ -146,7 +146,7 @@ class TestDuplicateSessionName:
         numbered = f"{e2e_session_name}-1"
         try:
             second = run_ianux(
-                "session", "--panes", "3", "--session-name", e2e_session_name,
+                "session", "--window-panes", "3", "--session-name", e2e_session_name,
                 "--directory", str(d), "--init-command", "", "--detach",
             )
             assert second.returncode == 0, second.stderr
@@ -167,7 +167,7 @@ class TestListSubcommand:
         d.mkdir()
 
         created = run_ianux(
-            "session", "--panes", "2", "--session-name", e2e_session_name,
+            "session", "--window-panes", "2", "--session-name", e2e_session_name,
             "--directory", str(d), "--init-command", "", "--detach",
         )
         assert created.returncode == 0, created.stderr

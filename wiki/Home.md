@@ -17,10 +17,12 @@ Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/), and `tmux` availab
 ```bash
 uv tool install .
 ianux --help
-ianux session --panes 4
+ianux session -p 4
 ```
 
 For a checkout-local environment, use `uv sync` and prefix commands with `uv run`.
+In `session` mode, `-p`/`--window-panes` sets each window's pane count and
+`-w`/`--window-name` sets its name; repeat either option for multiple windows.
 
 ## Commands
 

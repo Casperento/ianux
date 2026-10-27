@@ -14,6 +14,13 @@ Ianux provides seven subcommands. Run `ianux <command> --help` for the complete 
 
 If the first argument is not a recognized subcommand, Ianux treats the invocation as `session`. With no arguments, it displays top-level help.
 
+Use `--version` (or `-v`) to print the installed Ianux package version:
+
+```bash
+ianux --version
+ianux -v
+```
+
 ## `session`
 
 Create a session with one or more windows and panes:

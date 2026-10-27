@@ -39,10 +39,6 @@ session  (s)  — default
 
         ianux session -d --window-panes 4 --init-command 'echo Hello'
 
-run  (r)
-    Create a new detached tmux session and send one or more shell commands
-    into it, sequentially — equivalent to the tmrun() bash function.
-
 attach  (a)
     List all open tmux sessions and let the user pick one interactively.
     Accepts an optional SESSION argument to skip the picker and attach
@@ -68,7 +64,7 @@ dump  (d)
 
 Factories
 ---------
-parse_args()     → SessionConfig | RunConfig | AttachConfig | KillConfig | DumpConfig
+parse_args()     → SessionConfig | AttachConfig | KillConfig | DumpConfig
 build_resolver() → DirectoryResolver        (session subcommand only)
 """
 
@@ -88,7 +84,6 @@ from .config import (
     KillConfig,
     ListConfig,
     LoadConfig,
-    RunConfig,
     SessionConfig,
     WindowConfig,
     auto_session_name,
@@ -99,29 +94,11 @@ from .directory import DirectoryResolver, ExplicitResolver
 from .exceptions import AppError
 
 # ---------------------------------------------------------------------------
-# Tokens that look like commands rather than session names (mirrors tmrun).
-# ---------------------------------------------------------------------------
-_COMMAND_TOKENS = frozenset(
-    {
-        "bash",
-        "cd",
-        "docker",
-        "echo",
-        "git",
-        "ls",
-        "node",
-        "npm",
-        "python",
-        "python3",
-        "sh",
-    }
-)
-
 # Subcommand names (full and short aliases).
 _SUBCOMMANDS = frozenset(
     {
-        "session", "run", "attach", "kill", "list", "load", "dump",
-        "s", "r", "a", "k", "ls", "l", "d",
+        "session", "attach", "kill", "list", "load", "dump",
+        "s", "a", "k", "ls", "l", "d",
     }
 )
 
@@ -129,7 +106,6 @@ _SUBCOMMANDS = frozenset(
 _ALIAS_MAP: dict[str, str] = {
     "a": "attach",
     "k": "kill",
-    "r": "run",
     "s": "session",
     "ls": "list",
     "l": "load",
@@ -149,7 +125,7 @@ def _normalize_argv(argv: list[str]) -> list[str]:
     rather than dropping silently into the interactive session flow.
 
     This supports bare session flags such as ``ianux --window-panes 6``
-    as well as ``ianux session --window-panes 6`` and ``ianux run ...``.
+    as well as ``ianux session --window-panes 6``.
     """
     if not argv:
         return ["--help"]
@@ -176,7 +152,6 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
 
     _add_session_subparser(subparsers)
-    _add_run_subparser(subparsers)
     _add_attach_subparser(subparsers)
     _add_kill_subparser(subparsers)
     _add_list_subparser(subparsers)
@@ -279,68 +254,6 @@ def _add_session_subparser(subparsers) -> None:
             "Create and initialise the session but do not attach to it."
             " The session runs in the background; attach later with"
             " 'ianux attach' or 'tmux attach-session -t <name>'."
-        ),
-    )
-
-
-# ---------------------------------------------------------------------------
-# 'run' subcommand
-# ---------------------------------------------------------------------------
-
-
-def _add_run_subparser(subparsers) -> None:
-    p = subparsers.add_parser(
-        "run",
-        aliases=["r"],
-        help="Run commands in a new detached tmux session.",
-        description=(
-            "Create a detached tmux session and send one or more shell\n"
-            "commands into it sequentially.\n\n"
-            "SESSION_NAME is optional.  When omitted (or when the first\n"
-            "positional looks like a shell command), a name is generated\n"
-            "automatically as job_DDHHMMSS.\n\n"
-            "Examples:\n"
-            "  ianux run build  make clean  make all\n"
-            "  ianux run mybuild  make clean  make all\n"
-            "  ianux run --session mybuild  make clean  make all"
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    p.add_argument(
-        "--session",
-        metavar="NAME",
-        help=(
-            "Explicit session name."
-            " Overrides the auto-detection heuristic for the first positional."
-        ),
-    )
-    p.add_argument(
-        "-k", "--kill",
-        action="store_true",
-        default=False,
-        help=(
-            "Wait for all commands to finish, capture the full pane scrollback,"
-            " write it to a file, then kill the session."
-            " Default output file: /tmp/<session-name>.capture-pane"
-        ),
-    )
-    p.add_argument(
-        "-o", "--output",
-        metavar="FILE",
-        default=None,
-        help=(
-            "File path for the captured pane output (requires --kill)."
-            " Default: /tmp/<session-name>.capture-pane"
-        ),
-    )
-    p.add_argument(
-        "args",
-        nargs="+",
-        metavar="[SESSION_NAME] CMD [CMD ...]",
-        help=(
-            "Optional session name followed by one or more shell commands."
-            " A token is treated as the session name when it contains no spaces"
-            " and is not a recognised shell command."
         ),
     )
 
@@ -563,8 +476,7 @@ def _add_dump_subparser(subparsers) -> None:
 def parse_args(
     argv: list[str] | None = None,
 ) -> (
-    SessionConfig | RunConfig | AttachConfig | KillConfig | ListConfig
-    | LoadConfig | DumpConfig
+    SessionConfig | AttachConfig | KillConfig | ListConfig | LoadConfig | DumpConfig
 ):
     """Parse argv and return the appropriate config dataclass."""
     # When argv is None read from sys.argv[1:] explicitly so that
@@ -578,8 +490,6 @@ def parse_args(
     # dispatch below never has to handle both forms.
     namespace_parsed.command = _ALIAS_MAP.get(namespace_parsed.command, namespace_parsed.command)
 
-    if namespace_parsed.command == "run":
-        return _parse_run_config(arg_parser, namespace_parsed)
     if namespace_parsed.command == "attach":
         return _parse_attach_config(namespace_parsed)
     if namespace_parsed.command == "kill":
@@ -686,55 +596,11 @@ def _parse_session_config(
         parser.error(str(exc))
 
 
-def _parse_run_config(
-    arg_parser: argparse.ArgumentParser, namespace_parsed: argparse.Namespace
-) -> RunConfig:
-    raw: list[str] = namespace_parsed.args
-    kill: bool = namespace_parsed.kill
-    output: str | None = namespace_parsed.output
-
-    if namespace_parsed.session:
-        # Explicit --session flag: everything in args is a command.
-        if not raw:
-            arg_parser.error("run: provide at least one command.")
-        return RunConfig(
-            session_name=namespace_parsed.session,
-            commands=raw,
-            kill=kill,
-            output=output,
-        )
-
-    # Heuristic: first token is a session name when it has no spaces and is
-    # not a recognised shell command — mirrors the tmrun() bash function.
-    if len(raw) >= 2 and _looks_like_session_name(raw[0]):
-        return RunConfig(
-            session_name=raw[0],
-            commands=raw[1:],
-            kill=kill,
-            output=output,
-        )
-
-    if not raw:
-        arg_parser.error("run: provide at least one command.")
-
-    return RunConfig(
-        session_name=auto_session_name(),
-        commands=raw,
-        kill=kill,
-        output=output,
-    )
-
-
 def _parse_load_config(parsed: argparse.Namespace) -> LoadConfig:
     return LoadConfig(path=parsed.path)
 
 
 def _parse_attach_config(parsed: argparse.Namespace) -> AttachConfig:
     return AttachConfig(session_name=parsed.session_name)
-
-
-def _looks_like_session_name(token: str) -> bool:
-    """True when a token should be treated as a session name, not a command."""
-    return " " not in token and token not in _COMMAND_TOKENS
 
 

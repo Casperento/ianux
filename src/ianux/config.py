@@ -2,8 +2,8 @@
 
 Each CLI subcommand has a matching ``*Config`` dataclass here; ``cli.py``
 builds one from parsed arguments and passes it to the corresponding manager
-(SessionManager, SessionRunner, SessionKiller, SessionAttacher, loader.py,
-dumper.py). ``build_session_config()`` centralizes the panes-range checks and
+(SessionManager, SessionKiller, SessionAttacher, loader.py, dumper.py).
+``build_session_config()`` centralizes the panes-range checks and
 defaulting shared by the 'session' and 'load' subcommands.
 """
 
@@ -111,23 +111,8 @@ def build_session_config(
 
 
 def auto_session_name() -> str:
-    """Generate a unique-ish session name (mirrors tmrun's job_DDHHMMSS)."""
+    """Generate a timestamp-based session name."""
     return f"job_{datetime.now().strftime('%d%H%M%S')}"
-
-
-@dataclass
-class RunConfig:
-    """Parameters for the 'run' subcommand.
-
-    When *kill* is True the runner waits for all commands to finish, captures
-    the pane scrollback, writes it to *output* (or ``/tmp/<session>.capture-pane``
-    when *output* is None), then kills the session.
-    """
-
-    session_name: str
-    commands: list[str]
-    kill: bool = False          # wait → capture → write → kill session
-    output: str | None = None   # None → /tmp/<session_name>.capture-pane
 
 
 @dataclass

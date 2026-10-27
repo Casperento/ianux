@@ -19,7 +19,6 @@ argv
 | `picker.py` | Shared interactive selection and numbered output |
 | `exceptions.py` | `AppError`, handled by the application entrypoint |
 | `session.py` | Create and initialize multi-window sessions |
-| `runner.py` | Launch detached command sessions and capture output |
 | `lister.py` | Format and print session listings |
 | `attacher.py` | Resolve and attach to a session target |
 | `killer.py` | Parse targets and kill sessions, windows, or panes |

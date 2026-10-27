@@ -12,7 +12,6 @@ from ianux.config import (
     DumpConfig,
     KillConfig,
     LoadConfig,
-    RunConfig,
     SessionConfig,
     WindowConfig,
 )
@@ -40,7 +39,6 @@ class TestMainRouting:
         [
             pytest.param(AttachConfig(session_name="s"), "SessionAttacher", "attach", id="attach"),
             pytest.param(KillConfig(), "SessionKiller", "kill", id="kill"),
-            pytest.param(RunConfig(session_name="j", commands=["make"]), "SessionRunner", "run", id="run"),
             pytest.param(DumpConfig(session_name="s"), "SessionDumper", "dump", id="dump"),
         ],
     )

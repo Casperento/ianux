@@ -1,6 +1,6 @@
 # Ianux Wiki
 
-Ianux is a command-line wrapper for common [tmux](https://github.com/tmux/tmux) session workflows. It can create multi-window, multi-pane workspaces, launch detached commands, list and attach to sessions, close sessions or panes, and save or restore session layouts.
+Ianux is a command-line wrapper for common [tmux](https://github.com/tmux/tmux) session workflows. It can create multi-window, multi-pane workspaces, launch commands in detached sessions, list and attach to sessions, close sessions or panes, and save or restore session layouts.
 
 ## Wiki pages
 
@@ -29,7 +29,6 @@ In `session` mode, `-p`/`--window-panes` sets each window's pane count and
 | Command | Alias | Use |
 |---|---|---|
 | `session` | `s` | Create a workspace and attach to it (the default command) |
-| `run` | `r` | Run commands in a new detached session |
 | `list` | `ls` | List open sessions with numeric IDs |
 | `attach` | `a` | Attach interactively or to a session/window/pane |
 | `kill` | `k` | Kill a session, window, or pane |
@@ -37,3 +36,15 @@ In `session` mode, `-p`/`--window-panes` sets each window's pane count and
 | `dump` | `d` | Save pane directories from a session as TOML |
 
 Run `ianux <command> --help` for current options. The [command reference](Commands.md) describes the main workflows and addressing rules.
+
+To start commands without attaching, use `ianux session -d`. Repeat `-p`/`-w`
+to create multiple windows and `-c` to assign a command to each pane in order.
+For example:
+
+```bash
+ianux session -d -p 2 -w app -p 1 -w logs \
+  -c 'npm run dev' -c 'npm test' -c 'tail -f app.log'
+```
+
+This starts three commands in two windows and leaves the session running in the
+background. Attach later with `ianux attach`.

@@ -58,16 +58,10 @@ def run_ianux(*args: str, input: str | None = None) -> subprocess.CompletedProce
 @pytest.fixture
 def e2e_session_name():
     """A unique real tmux session name, killed for real on teardown (pass or fail).
-
-    Also removes the 'run --kill' daemon's conventional sidecar files
-    (/tmp/<name>.capture-pane, /tmp/<name>.monitor.log) if a test created
-    them — harmless no-op for tests that never do.
     """
     name = f"ianux-e2e-{uuid.uuid4().hex[:8]}"
     yield name
     subprocess.run(["tmux", "kill-session", "-t", name], check=False, capture_output=True)
-    Path(f"/tmp/{name}.capture-pane").unlink(missing_ok=True)
-    Path(f"/tmp/{name}.monitor.log").unlink(missing_ok=True)
 
 
 def session_index(name: str) -> int:

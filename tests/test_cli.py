@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from ianux.cli import (
-    _looks_like_session_name,
     _normalize_argv,
     _slice_by_window,
     build_resolver,
@@ -18,7 +17,6 @@ from ianux.config import (
     KillConfig,
     ListConfig,
     LoadConfig,
-    RunConfig,
     SessionConfig,
     WindowConfig,
     auto_session_name,
@@ -37,7 +35,6 @@ class TestNormalizeArgv:
         [
             ([], ["--help"]),
             (["session"], ["session"]),
-            (["run", "echo", "hi"], ["run", "echo", "hi"]),
             (["k"], ["k"]),
             (["-h"], ["-h"]),
             (["--help"], ["--help"]),
@@ -58,7 +55,6 @@ class TestNormalizeArgv:
     "argv, config_type",
     [
         (["s"], SessionConfig),
-        (["r", "echo", "hello"], RunConfig),
         (["a"], AttachConfig),
         (["k"], KillConfig),
         (["ls"], ListConfig),
@@ -231,39 +227,6 @@ class TestSliceByWindow:
 
 
 # ---------------------------------------------------------------------------
-# parse_args — run subcommand
-# ---------------------------------------------------------------------------
-
-
-class TestParseArgsRun:
-    def test_single_command(self):
-        cfg = parse_args(["run", "make"])
-        assert isinstance(cfg, RunConfig)
-        assert cfg.commands == ["make"]
-
-    def test_heuristic_session_name(self):
-        cfg = parse_args(["run", "mybuild", "make", "clean"])
-        assert isinstance(cfg, RunConfig)
-        assert cfg.session_name == "mybuild"
-        assert cfg.commands == ["make", "clean"]
-
-    def test_bash_not_treated_as_session_name(self):
-        # 'bash' is in _COMMAND_TOKENS — it should not be treated as the session
-        # name even when it appears first. Avoid passing '-c' which argparse
-        # would interpret as an unknown flag; use plain words instead.
-        cfg = parse_args(["run", "bash", "myscript.sh"])
-        assert isinstance(cfg, RunConfig)
-        assert cfg.session_name != "bash"
-        assert "bash" in cfg.commands
-
-    def test_explicit_session_flag(self):
-        cfg = parse_args(["run", "--session", "mysession", "make", "all"])
-        assert isinstance(cfg, RunConfig)
-        assert cfg.session_name == "mysession"
-        assert cfg.commands == ["make", "all"]
-
-
-# ---------------------------------------------------------------------------
 # parse_args — attach subcommand
 # ---------------------------------------------------------------------------
 
@@ -351,26 +314,6 @@ class TestBuildResolver:
         resolver = build_resolver(cfg)
         assert isinstance(resolver, ExplicitResolver)
         assert resolver.resolve() == first.resolve()
-
-
-# ---------------------------------------------------------------------------
-# _looks_like_session_name
-# ---------------------------------------------------------------------------
-
-
-class TestLooksLikeSessionName:
-    def test_plain_word_is_session_name(self):
-        assert _looks_like_session_name("mybuild") is True
-
-    def test_known_command_is_not_session_name(self):
-        for cmd in ("bash", "git", "python", "python3", "sh"):
-            assert _looks_like_session_name(cmd) is False
-
-    def test_token_with_space_is_not_session_name(self):
-        assert _looks_like_session_name("make clean") is False
-
-    def test_hyphenated_name_is_session_name(self):
-        assert _looks_like_session_name("my-build") is True
 
 
 # ---------------------------------------------------------------------------

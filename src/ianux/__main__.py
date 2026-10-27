@@ -10,12 +10,11 @@ import sys
 
 from .attacher import SessionAttacher
 from .cli import build_resolver, parse_args
-from .config import AttachConfig, DumpConfig, KillConfig, LoadConfig, RunConfig, ListConfig
+from .config import AttachConfig, DumpConfig, KillConfig, LoadConfig, ListConfig
 from .dumper import SessionDumper
 from .exceptions import AppError, InteractiveQuit
 from .killer import SessionKiller
 from .loader import load_session_config
-from .runner import SessionRunner
 from .session import SessionManager
 from .tmux import TmuxClient
 from .lister import SessionLister
@@ -31,9 +30,6 @@ def main(argv: list[str] | None = None) -> int:
 
     if isinstance(config, KillConfig):
         return SessionKiller(client).kill(config)
-
-    if isinstance(config, RunConfig):
-        return SessionRunner(client).run(config)
 
     if isinstance(config,ListConfig):
         return SessionLister(client).list(config)

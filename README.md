@@ -4,8 +4,8 @@
 </div>
 
 ianux is a quick-to-use Python command-line tool for creating and restoring
-multi-window, multi-pane tmux sessions, running detached jobs, and listing,
-attaching to, or closing sessions. It requires Python 3.11+,
+multi-window, multi-pane tmux sessions, running commands in detached sessions,
+and listing, attaching to, or closing sessions. It requires Python 3.11+,
 [uv](https://docs.astral.sh/uv/), and `tmux` on `PATH`.
 
 ## Quick start
@@ -40,7 +40,6 @@ Without `-p`/`--window-panes`, Ianux creates one window with four panes.
 | Command | Alias | Purpose |
 |---|---|---|
 | `session` | `s` | Create and attach to a multi-window, multi-pane session (default) |
-| `run` | `r` | Run commands in a detached session |
 | `list` | `ls` | List open sessions |
 | `attach` | `a` | Attach to a session, window, or pane |
 | `kill` | `k` | Close a session, window, or pane |
@@ -50,6 +49,17 @@ Without `-p`/`--window-panes`, Ianux creates one window with four panes.
 Run `ianux <command> --help` for options and examples. See the [wiki](wiki/Home.md)
 for the [full command reference](wiki/Commands.md), [TOML configuration guide](wiki/Configuration.md),
 and [architecture](wiki/Architecture.md).
+
+To run commands in the background, create a detached session with `session -d`.
+Repeat `-p`/`-w` to create multiple windows, and `-c` to assign commands to
+panes in order. For example, this starts three commands across two windows:
+
+```bash
+ianux session -d -p 2 -w app -p 1 -w logs \
+  -c 'npm run dev' -c 'npm test' -c 'tail -f app.log'
+```
+
+The session stays available after Ianux exits. Attach later with `ianux attach`.
 
 Interactive pickers for `attach`, `dump`, and `load` show numbered choices;
 enter `q` to quit without taking action. The interactive `kill` picker works

@@ -1,11 +1,10 @@
 # Command reference
 
-Ianux provides seven subcommands. Run `ianux <command> --help` for the complete option list.
+Ianux provides six subcommands. Run `ianux <command> --help` for the complete option list.
 
 | Command | Alias | Purpose |
 |---|---|---|
 | `session` | `s` | Create a multi-window, multi-pane workspace |
-| `run` | `r` | Send commands to a detached session |
 | `list` | `ls` | Display open sessions and their numeric IDs |
 | `attach` | `a` | Select or target a session, window, or pane |
 | `kill` | `k` | Select or target a session, window, or pane to close |
@@ -39,16 +38,20 @@ Use `--session-name NAME` to choose an exact name, `--detach` to create without 
 
 When the requested name already exists, Ianux chooses a numbered variant (`name-1`, `name-2`, …) and leaves the existing session untouched. Unnamed sessions receive a generated `job_DDHHMMSS` name.
 
-## `run`
+## Run commands in a detached session
 
-Run one or more shell commands sequentially in a new detached session:
+Use `session -d` to initialize panes with commands and leave the tmux session
+running in the background. Repeat `-p`/`-w` to make multiple windows and repeat
+`-c` once per pane to provide commands in order across those windows:
 
 ```bash
-ianux run "make clean" "make all"
-ianux run --session mybuild "make clean" "make all"
+ianux session -d -p 2 -w app -p 1 -w logs \
+  -c 'npm run dev' -c 'npm test' -c 'tail -f app.log'
 ```
 
-Use `--session NAME` for an explicit session name. Without it, Ianux may interpret the first positional argument as a name when it has no spaces and is not a recognized shell command; otherwise it generates a name. Use `--kill` to wait for the commands to finish, capture their output, and then close the session. `--output FILE` chooses the capture path; its default is `/tmp/<session>.capture-pane`. The monitoring process polls the pane for up to one hour and records completion in `/tmp/<session>.monitor.log`.
+The first two commands start in separate panes of the `app` window; the third
+starts in the `logs` window. If fewer commands are provided than panes, the last
+command is reused. Attach later with `ianux attach` (or `tmux attach-session`).
 
 ## `list`
 

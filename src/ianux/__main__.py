@@ -12,7 +12,7 @@ from .attacher import SessionAttacher
 from .cli import build_resolver, parse_args
 from .config import AttachConfig, DumpConfig, KillConfig, LoadConfig, RunConfig, ListConfig
 from .dumper import SessionDumper
-from .exceptions import AppError
+from .exceptions import AppError, InteractiveQuit
 from .killer import SessionKiller
 from .loader import load_session_config
 from .runner import SessionRunner
@@ -54,6 +54,8 @@ def entrypoint() -> int:
     """Run main(), converting an AppError into a printed message and exit code 1."""
     try:
         return main()
+    except InteractiveQuit:
+        return 0
     except AppError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1

@@ -51,6 +51,11 @@ Run `ianux <command> --help` for options and examples. See the [wiki](wiki/Home.
 for the [full command reference](wiki/Commands.md), [TOML configuration guide](wiki/Configuration.md),
 and [architecture](wiki/Architecture.md).
 
+Interactive pickers for `attach`, `dump`, and `load` show numbered choices;
+enter `q` to quit without taking action. The interactive `kill` picker works
+the same way. For `kill SESSION:WINDOW.*`, enter a pane index to keep that pane,
+`n` to close all panes, or `q` to cancel.
+
 ## Development
 
 ```bash

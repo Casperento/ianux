@@ -119,6 +119,12 @@ class TestDumpDirect:
 
 
 class TestDumpInteractive:
+    def test_quit_does_not_write_a_dump(self, e2e_session_name, tmp_path):
+        _tmux("new-session", "-d", "-s", e2e_session_name)
+        result = run_ianux("dump", "-o", str(tmp_path), input="q\n")
+        assert result.returncode == 0, result.stderr
+        assert list(tmp_path.iterdir()) == []
+
     def test_dumps_picked_session_by_computed_index(self, e2e_session_name, tmp_path):
         _tmux("new-session", "-d", "-s", e2e_session_name)
         idx = session_index(e2e_session_name)

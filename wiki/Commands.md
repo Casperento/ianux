@@ -67,7 +67,9 @@ ianux attach 2           # by numeric ID from list
 ianux attach 2:1.0       # window 1, pane 0
 ```
 
-With no target, Ianux prompts you to choose a session. A target can be a name or list ID, optionally followed by a tmux window or pane index.
+With no target, Ianux shows a numbered session list. Enter the number to
+continue or `q` to quit without attaching. A target can be a name or list ID,
+optionally followed by a tmux window or pane index.
 
 ## `kill`
 
@@ -79,7 +81,7 @@ ianux kill 2:0.1         # pane 1 in window 0
 ianux kill my-session:0.*
 ```
 
-Targets use `SESSION`, `SESSION:WINDOW`, `SESSION:WINDOW.PANE`, or `SESSION:WINDOW.*`. `SESSION` can be a literal name or a numeric ID from `list`. The `.*` target prompts whether to keep one pane or close all panes in the window. Interactive mode repeats until you quit or no sessions remain.
+Targets use `SESSION`, `SESSION:WINDOW`, `SESSION:WINDOW.PANE`, or `SESSION:WINDOW.*`. `SESSION` can be a literal name or a numeric ID from `list`. Interactive mode shows a numbered list and repeats until you enter `q` or no sessions remain. The `.*` target lists pane indexes; enter an index to keep that pane, `n` to close all panes, or `q` to cancel.
 
 ## `load` and `dump`
 
@@ -92,4 +94,4 @@ ianux dump my-session
 ianux dump my-session --output ~/configs
 ```
 
-The default config directory is `~/.config/ianux/sessions/`. See [TOML session configurations](Configuration.md) for the schema and behavior.
+The default config directory is `~/.config/ianux/sessions/`. Interactive `load` and `dump` pickers show numbered session/config choices; enter `q` to quit without loading or writing a dump. See [TOML session configurations](Configuration.md) for the schema and behavior.

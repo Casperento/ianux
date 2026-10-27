@@ -35,7 +35,7 @@ from __future__ import annotations
 from typing import Callable, NamedTuple
 
 from .config import KillConfig
-from .exceptions import AppError
+from .exceptions import AppError, InteractiveQuit
 from .picker import print_numbered
 from .tmux import TmuxClient
 
@@ -183,19 +183,24 @@ class SessionKiller:
         keep_pane: str | None = None
 
         if len(panes) > 1:
-            raw = self._prompt(
-                "  Keep one pane open? Enter its index, or 'n' to kill all: "
-            ).strip()
-
-            if raw.lower() not in _KEEP_NONE_TOKENS:
+            while True:
+                raw = self._prompt(
+                    f"  Keep one pane open? (0-{len(panes) - 1}, "
+                    "n to kill all, or q to quit): "
+                ).strip()
+                if raw.lower() in _QUIT_TOKENS:
+                    raise InteractiveQuit
+                if raw.lower() in _KEEP_NONE_TOKENS:
+                    break
                 try:
                     idx = int(raw)
                     if 0 <= idx < len(panes):
                         keep_pane = panes[idx]
+                        break
                     else:
-                        print(f"  Index {raw} out of range — killing all panes.")
+                        print(f"  Index {raw} out of range.")
                 except ValueError:
-                    print(f"  '{raw}' is not a valid index — killing all panes.")
+                    print(f"  Invalid selection: '{raw}' — enter an index, 'n', or 'q'.")
 
         if keep_pane is None:
             # No pane to preserve — kill the whole window at once.

@@ -100,6 +100,12 @@ class TestAttachDirect:
 
 
 class TestAttachInteractive:
+    def test_quit_leaves_session_unattached(self, e2e_session_name):
+        _create_session(e2e_session_name)
+        result = run_ianux("attach", input="q\n")
+        assert result.returncode == 0, result.stderr
+        assert not _is_attached(e2e_session_name)
+
     def test_picks_and_attaches_by_computed_index(self, e2e_session_name):
         _create_session(e2e_session_name)
         idx = session_index(e2e_session_name)

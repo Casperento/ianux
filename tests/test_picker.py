@@ -2,7 +2,7 @@
 
 import pytest
 
-from ianux.exceptions import AppError
+from ianux.exceptions import AppError, InteractiveQuit
 from ianux.picker import pick, pick_session
 
 
@@ -17,6 +17,15 @@ class TestPick:
         assert "Configs:" in out
         assert "[1] A.TOML" in out
         assert "[2] B.TOML" in out
+
+    def test_prompt_includes_quit_option(self):
+        prompts = []
+        pick(["alpha"], lambda p: prompts.append(p) or "1", heading="h", prompt="p")
+        assert prompts == ["p (1-1, or q to quit): "]
+
+    def test_q_quits_without_selecting(self):
+        with pytest.raises(InteractiveQuit):
+            pick(["alpha"], lambda _: "q", heading="h", prompt="p")
 
     @pytest.mark.parametrize(
         "raw, match",
@@ -38,4 +47,4 @@ class TestPickSession:
         mock_client.list_sessions_names.return_value = ["alpha"]
         prompts = []
         pick_session(mock_client, lambda p: prompts.append(p) or "1", "Select a session to dump")
-        assert prompts == ["Select a session to dump (1-1): "]
+        assert prompts == ["Select a session to dump (1-1, or q to quit): "]

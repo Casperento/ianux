@@ -50,7 +50,7 @@ Unknown keys at the top level, window level, or pane level are rejected to help 
 ianux load
 ```
 
-With no file path, `load` lists TOML files in `~/.config/ianux/sessions/` and prompts you to pick one. If that directory does not exist, Ianux creates it and seeds it with `demo.toml`. An existing directory, including an empty one, is left as-is. To load a specific file without prompting, pass its path to `load`.
+With no file path, `load` lists TOML files in `~/.config/ianux/sessions/` and prompts you to pick one by number. Enter `q` to quit without loading. If that directory does not exist, Ianux creates it and seeds it with `demo.toml`. An existing directory, including an empty one, is left as-is. To load a specific file without prompting, pass its path to `load`.
 
 ## Dumping sessions
 

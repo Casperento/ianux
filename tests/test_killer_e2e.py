@@ -91,6 +91,13 @@ class TestKillDirectTarget:
 
 
 class TestKillAllPanesWildcard:
+    def test_quitting_cancels_without_killing_panes(self, e2e_session_name):
+        _create_session(e2e_session_name, panes_in_window_0=3)
+        ids_before = _pane_ids(e2e_session_name)
+        result = run_ianux("kill", f"{e2e_session_name}:0.*", input="q\n")
+        assert result.returncode == 0, result.stderr
+        assert _pane_ids(e2e_session_name) == ids_before
+
     def test_declining_to_keep_a_pane_kills_the_whole_window(self, e2e_session_name):
         """Window 0 is the session's only window, so killing it also ends
         the session — tmux destroys a session once its last window closes."""

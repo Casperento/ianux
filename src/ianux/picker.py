@@ -2,7 +2,7 @@
 
 from typing import Callable, Sequence, TypeVar
 
-from .exceptions import AppError
+from .exceptions import AppError, InteractiveQuit
 from .tmux import TmuxClient
 
 T = TypeVar("T")
@@ -25,10 +25,13 @@ def pick(
 ) -> T:
     """List *items*, prompt for a 1-based index, and return the chosen item.
 
-    Raises AppError on non-numeric or out-of-range input.
+    Raises AppError on non-numeric or out-of-range input. Entering ``q`` raises
+    InteractiveQuit so the command can stop without an error.
     """
     print_numbered(heading, items, label)
-    raw = prompt_fn(f"{prompt} (1-{len(items)}): ").strip()
+    raw = prompt_fn(f"{prompt} (1-{len(items)}, or q to quit): ").strip()
+    if raw.lower() in {"q", "quit", "exit", "done"}:
+        raise InteractiveQuit
     try:
         idx = int(raw)
     except ValueError:

@@ -79,6 +79,7 @@ import sys
 from pathlib import Path
 from typing import TypeVar
 
+from . import __version__
 from .config import (
     _DEFAULT_CONFIG_DIR,
     _DEFAULT_INIT_COMMAND,
@@ -155,7 +156,7 @@ def _normalize_argv(argv: list[str]) -> list[str]:
     """
     if not argv:
         return ["--help"]
-    if argv[0] in _SUBCOMMANDS or argv[0] in ("-h", "--help"):
+    if argv[0] in _SUBCOMMANDS or argv[0] in ("-h", "--help", "-v", "--version"):
         return argv
     return ["session"] + argv
 
@@ -169,6 +170,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ianux",
         description="tmux session utilities.",
+    )
+    parser.add_argument(
+        "-v", "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
 

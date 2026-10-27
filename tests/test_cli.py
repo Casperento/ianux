@@ -41,7 +41,7 @@ class TestNormalizeArgv:
             (["k"], ["k"]),
             (["-h"], ["-h"]),
             (["--help"], ["--help"]),
-            (["--panes", "6"], ["session", "--panes", "6"]),
+            (["--window-panes", "6"], ["session", "--window-panes", "6"]),
             (["myproject"], ["session", "myproject"]),
         ],
     )
@@ -86,17 +86,17 @@ class TestParseArgsSession:
         assert len(win.init_commands) == 1 and win.init_commands[0]  # non-empty default
         assert cfg.detach is False
 
-    def test_panes_flag(self):
-        assert parse_args(["session", "--panes", "8"]).windows[0].panes == 8
+    def test_window_panes_flag_for_one_window(self):
+        assert parse_args(["session", "--window-panes", "8"]).windows[0].panes == 8
 
     @pytest.mark.parametrize("panes", ["0", "999"])
-    def test_panes_out_of_range_exits(self, panes):
+    def test_window_panes_out_of_range_exits(self, panes):
         with pytest.raises(SystemExit):
-            parse_args(["session", "--panes", panes])
+            parse_args(["session", "--window-panes", panes])
 
     def test_multiple_directory_flags(self):
         cfg = parse_args([
-            "session", "--panes", "3",
+            "session", "--window-panes", "3",
             "--directory", "/tmp/a",
             "--directory", "/tmp/b",
             "--directory", "/tmp/c",
@@ -113,7 +113,7 @@ class TestParseArgsSession:
 
     def test_multiple_init_commands(self):
         cfg = parse_args([
-            "session", "--panes", "3",
+            "session", "--window-panes", "3",
             "--init-command", "cmd1",
             "--init-command", "cmd2",
             "--init-command", "cmd3",
@@ -124,11 +124,15 @@ class TestParseArgsSession:
     def test_detach_flag(self, flag):
         assert parse_args(["session", flag]).detach is True
 
-    def test_backward_compat_bare_flag(self):
-        """--panes without a subcommand still produces SessionConfig."""
-        cfg = parse_args(["--panes", "3"])
+    def test_window_panes_bare_flag(self):
+        """--window-panes without a subcommand still produces SessionConfig."""
+        cfg = parse_args(["--window-panes", "3"])
         assert isinstance(cfg, SessionConfig)
         assert cfg.windows[0].panes == 3
+
+    def test_panes_flag_is_removed(self):
+        with pytest.raises(SystemExit):
+            parse_args(["session", "--panes", "3"])
 
 
 # ---------------------------------------------------------------------------
@@ -137,6 +141,12 @@ class TestParseArgsSession:
 
 
 class TestParseArgsSessionMultiWindow:
+    def test_short_window_options(self):
+        cfg = parse_args([
+            "session", "-p", "2", "-w", "editor", "-p", "1", "-w", "logs",
+        ])
+        assert [(w.panes, w.name) for w in cfg.windows] == [(2, "editor"), (1, "logs")]
+
     def test_window_panes_creates_multiple_windows(self):
         cfg = parse_args(["session", "--window-panes", "2", "--window-panes", "1"])
         assert [w.panes for w in cfg.windows] == [2, 1]
@@ -165,10 +175,6 @@ class TestParseArgsSessionMultiWindow:
                 "session", "--window-panes", "1",
                 "--window-name", "a", "--window-name", "b",
             ])
-
-    def test_panes_and_window_panes_together_is_error(self):
-        with pytest.raises(SystemExit):
-            parse_args(["session", "--panes", "2", "--window-panes", "3"])
 
     def test_directories_span_window_boundaries(self):
         cfg = parse_args([

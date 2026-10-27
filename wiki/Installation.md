@@ -18,7 +18,7 @@ ianux --help
 Then run commands directly, for example:
 
 ```bash
-ianux session --panes 4
+ianux session -p 4
 ianux list
 ```
 
@@ -29,8 +29,11 @@ Sync the development environment, then run Ianux through uv:
 ```bash
 uv sync
 uv run ianux --help
-uv run ianux session --panes 4
+uv run ianux session -p 4
 ```
+
+For session window configuration, `-p` is shorthand for `--window-panes` and
+`-w` is shorthand for `--window-name`. Both can be repeated once per window.
 
 ## Build distributions
 

@@ -1,5 +1,7 @@
 # Ianux Wiki
 
+![Ianux logo](../assets/ianux-logo.png)
+
 Ianux is a command-line wrapper for common [tmux](https://github.com/tmux/tmux) session workflows. It can create multi-window, multi-pane workspaces, launch commands in detached sessions, list and attach to sessions, close sessions or panes, and save or restore session layouts.
 
 ## Wiki pages

@@ -14,7 +14,30 @@ Ianux is a command-line wrapper for common [tmux](https://github.com/tmux/tmux) 
 
 ## Quick start
 
-Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/), and `tmux` available on `PATH`.
+Requirements: Python 3.11+ and `tmux` available on `PATH`.
+
+### Install with pip
+
+Use pip for a standard installation from the project checkout. This installs
+Ianux into the active Python environment:
+
+```bash
+python -m pip install ianux # make sure "~/.local/bin" is included in your PATH
+ianux --help
+ianux session -p 4
+```
+
+For development, use an editable installation so source changes are picked up
+without reinstalling:
+
+```bash
+python -m pip install -e .
+```
+
+### Install with uv
+
+Use [uv](https://docs.astral.sh/uv/) to install Ianux as an isolated standalone
+command:
 
 ```bash
 uv tool install .
@@ -22,7 +45,15 @@ ianux --help
 ianux session -p 4
 ```
 
-For a checkout-local environment, use `uv sync` and prefix commands with `uv run`.
+For a checkout-local development environment, use `uv sync` and prefix
+commands with `uv run`:
+
+```bash
+uv sync
+uv run ianux --help
+uv run ianux session -p 4
+```
+
 In `session` mode, `-p`/`--window-panes` sets each window's pane count and
 `-w`/`--window-name` sets its name; repeat either option for multiple windows.
 

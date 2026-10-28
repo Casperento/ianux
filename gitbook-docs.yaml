@@ -1,0 +1,12 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+version: 1
+site:
+  title: Ianux Documentation
+  structure:
+    - type: space
+      key: space-wiki
+      title: Ianux Wiki
+      path: wiki
+      default: true
+      content:
+        directory: ./wiki

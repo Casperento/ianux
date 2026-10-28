@@ -5,12 +5,27 @@
 
 ianux is a quick-to-use Python command-line tool for creating and restoring
 multi-window, multi-pane tmux sessions, running commands in detached sessions,
-and listing, attaching to, or closing sessions. It requires Python 3.11+,
-[uv](https://docs.astral.sh/uv/), and `tmux` on `PATH`.
+and listing, attaching to, or closing sessions. It requires Python 3.11+ and
+`tmux` on `PATH`.
 
 ## Quick start
 
-Install Ianux as a standalone command:
+Install Ianux with pip from a checkout:
+
+```bash
+python -m pip install .
+ianux --help
+ianux session -p 4
+```
+
+For an editable installation while developing:
+
+```bash
+python -m pip install -e .
+```
+
+Alternatively, install Ianux as a standalone command with
+[uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv tool install .

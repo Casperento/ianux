@@ -3,15 +3,14 @@
 ## Requirements
 
 - Python 3.11 or later
-- [uv](https://docs.astral.sh/uv/) for installation and project commands
 - `tmux` installed separately and available on `PATH`
 
-## Install as a command
+## Install with pip
 
 From the project checkout:
 
 ```bash
-uv tool install .
+python -m pip install .
 ianux --help
 ```
 
@@ -20,6 +19,22 @@ Then run commands directly, for example:
 ```bash
 ianux session -p 4
 ianux list
+```
+
+For an editable installation while developing:
+
+```bash
+python -m pip install -e .
+```
+
+## Install with uv
+
+If you use [uv](https://docs.astral.sh/uv/), install Ianux as a standalone
+command:
+
+```bash
+uv tool install .
+ianux --help
 ```
 
 ## Run from a checkout

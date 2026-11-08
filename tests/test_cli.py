@@ -15,6 +15,7 @@ from ianux.config import (
     KillConfig,
     ListConfig,
     LoadConfig,
+    PrintConfig,
     SessionConfig,
 )
 
@@ -31,6 +32,8 @@ class TestNormalizeArgv:
             ([], ["--help"]),
             (["session"], ["session"]),
             (["k"], ["k"]),
+            (["p"], ["p"]),
+            (["print"], ["print"]),
             (["-h"], ["-h"]),
             (["--help"], ["--help"]),
             (["--window-panes", "6"], ["session", "--window-panes", "6"]),
@@ -55,6 +58,8 @@ class TestNormalizeArgv:
         (["ls"], ListConfig),
         (["l", "myproject.toml"], LoadConfig),
         (["d", "my-session"], DumpConfig),
+        (["p", "s:0.0"], PrintConfig),
+        (["print", "s:0.0"], PrintConfig),
     ],
 )
 def test_alias_routes_to_subcommand(argv, config_type):
@@ -263,3 +268,27 @@ class TestParseArgsDump:
         cfg = parse_args(["dump", "my-session", "-o", "configs"])
         assert isinstance(cfg, DumpConfig)
         assert cfg.output == Path("configs")
+
+
+# ---------------------------------------------------------------------------
+# parse_args — print subcommand
+# ---------------------------------------------------------------------------
+
+
+class TestParseArgsPrint:
+    def test_print_returns_print_config(self):
+        cfg = parse_args(["print", "abc:0.1"])
+        assert isinstance(cfg, PrintConfig)
+        assert cfg.target == "abc:0.1"
+        assert cfg.scrollback is False
+
+    @pytest.mark.parametrize("flag", ["-s", "--scrollback"])
+    def test_scrollback_flag(self, flag):
+        cfg = parse_args(["p", flag, "0.1"])
+        assert isinstance(cfg, PrintConfig)
+        assert cfg.target == "0.1"
+        assert cfg.scrollback is True
+
+    def test_target_is_required(self):
+        with pytest.raises(SystemExit):
+            parse_args(["print"])

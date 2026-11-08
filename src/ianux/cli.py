@@ -51,6 +51,11 @@ kill  (k)
     quits.  Direct targets accept the same NAME|ID[:WINDOW[.PANE]] address
     form as 'attach'.
 
+print  (p)
+    Print the current output of a pane to stdout without attaching.  TARGET
+    is NAME|ID:WINDOW.PANE, or WINDOW.PANE for the current (or last-used) session.  Pass
+    ``-s`` for the full scrollback instead of the visible area.
+
 load  (l)
     Load a TOML file describing a 'session' configuration (one or more
     windows, each with its own panes) and create/attach the session exactly
@@ -65,7 +70,8 @@ dump  (d)
 
 Factories
 ---------
-parse_args()     → SessionConfig | AttachConfig | KillConfig | DumpConfig
+parse_args()     → SessionConfig | AttachConfig | KillConfig | ListConfig |
+                   LoadConfig | DumpConfig | PrintConfig
 build_resolver() → DirectoryResolver        (session subcommand only)
 """
 
@@ -85,6 +91,7 @@ from .config import (
     KillConfig,
     ListConfig,
     LoadConfig,
+    PrintConfig,
     SessionConfig,
     WindowConfig,
     auto_session_name,
@@ -98,8 +105,8 @@ from .exceptions import AppError
 # Subcommand names (full and short aliases).
 _SUBCOMMANDS = frozenset(
     {
-        "session", "attach", "kill", "list", "load", "dump",
-        "s", "a", "k", "ls", "l", "d",
+        "session", "attach", "kill", "list", "load", "dump", "print",
+        "s", "a", "k", "ls", "l", "d", "p",
     }
 )
 
@@ -111,6 +118,7 @@ _ALIAS_MAP: dict[str, str] = {
     "ls": "list",
     "l": "load",
     "d": "dump",
+    "p": "print",
 }
 
 
@@ -152,12 +160,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
 
-    _add_session_subparser(subparsers)
+    # Registered alphabetically so --help lists commands in that order.
     _add_attach_subparser(subparsers)
+    _add_dump_subparser(subparsers)
     _add_kill_subparser(subparsers)
     _add_list_subparser(subparsers)
     _add_load_subparser(subparsers)
-    _add_dump_subparser(subparsers)
+    _add_print_subparser(subparsers)
+    _add_session_subparser(subparsers)
 
     return parser
 
@@ -178,40 +188,13 @@ def _add_session_subparser(subparsers) -> None:
         ),
     )
     p.add_argument(
-        "-p", "--window-panes",
-        type=int,
-        action="append",
-        dest="window_panes",
-        default=None,
-        metavar="N",
+        "-d", "--detach",
+        action="store_true",
+        default=False,
         help=(
-            "Pane count for one window.  Repeat once per window (in order) to"
-            " create multiple windows.  Defaults to one window with"
-            f" {_DEFAULT_PANES} panes."
-        ),
-    )
-    p.add_argument(
-        "-w", "--window-name",
-        action="append",
-        dest="window_names",
-        default=None,
-        metavar="NAME",
-        help=(
-            "Name for one window.  Repeat once per window (in order),"
-            " aligned with --window-panes.  Windows without a corresponding"
-            " --window-name keep tmux's own default name."
-        ),
-    )
-    p.add_argument(
-        "-s", "--split-direction",
-        choices=("horizontal", "vertical"),
-        default=_DEFAULT_SPLIT_DIRECTION,
-        metavar="DIRECTION",
-        help=(
-            "Direction of the first split in every window: horizontal divides"
-            " top-to-bottom; vertical divides side-by-side. The next splits"
-            " alternate axes through four panes"
-            f" (default: {_DEFAULT_SPLIT_DIRECTION})."
+            "Create and initialise the session but do not attach to it."
+            " The session runs in the background; attach later with"
+            " 'ianux attach' or 'tmux attach-session -t <name>'."
         ),
     )
     p.add_argument(
@@ -230,11 +213,6 @@ def _add_session_subparser(subparsers) -> None:
         ),
     )
     p.add_argument(
-        "-n", "--session-name",
-        default=None,
-        help="Exact tmux session name to use (default: auto-generated, e.g. job_DDHHMMSS).",
-    )
-    p.add_argument(
         "-c", "--init-command",
         action="append",
         dest="init_commands",
@@ -248,13 +226,45 @@ def _add_session_subparser(subparsers) -> None:
         ),
     )
     p.add_argument(
-        "-d", "--detach",
-        action="store_true",
-        default=False,
+        "-n", "--session-name",
+        default=None,
+        help="Exact tmux session name to use (default: auto-generated, e.g. job_DDHHMMSS).",
+    )
+    p.add_argument(
+        "-s", "--split-direction",
+        choices=("horizontal", "vertical"),
+        default=_DEFAULT_SPLIT_DIRECTION,
+        metavar="DIRECTION",
         help=(
-            "Create and initialise the session but do not attach to it."
-            " The session runs in the background; attach later with"
-            " 'ianux attach' or 'tmux attach-session -t <name>'."
+            "Direction of the first split in every window: horizontal divides"
+            " top-to-bottom; vertical divides side-by-side. The next splits"
+            " alternate axes through four panes"
+            f" (default: {_DEFAULT_SPLIT_DIRECTION})."
+        ),
+    )
+    p.add_argument(
+        "-w", "--window-name",
+        action="append",
+        dest="window_names",
+        default=None,
+        metavar="NAME",
+        help=(
+            "Name for one window.  Repeat once per window (in order),"
+            " aligned with --window-panes.  Windows without a corresponding"
+            " --window-name keep tmux's own default name."
+        ),
+    )
+    p.add_argument(
+        "-p", "--window-panes",
+        type=int,
+        action="append",
+        dest="window_panes",
+        default=None,
+        metavar="N",
+        help=(
+            "Pane count for one window.  Repeat once per window (in order) to"
+            " create multiple windows.  Defaults to one window with"
+            f" {_DEFAULT_PANES} panes."
         ),
     )
 
@@ -480,6 +490,57 @@ def _add_dump_subparser(subparsers) -> None:
 
 
 # ---------------------------------------------------------------------------
+# 'print' subcommand
+# ---------------------------------------------------------------------------
+
+
+def _add_print_subparser(subparsers) -> None:
+    p = subparsers.add_parser(
+        "print",
+        aliases=["p"],
+        help="Print a pane's current output without attaching.",
+        description=(
+            "Print the current contents of a tmux pane to stdout, so you can\n"
+            "check on a running session without attaching to it.\n\n"
+            "TARGET formats\n"
+            "--------------\n"
+            "  SESSION:WINDOW.PANE  a pane in the named session\n"
+            "  WINDOW.PANE          a pane in the current session\n\n"
+            "The current session is the last-used one, i.e. the session you\n"
+            "are currently attached to: inside tmux, the session this shell\n"
+            "runs in; from another terminal, the session of the most recently\n"
+            "active tmux client (or, if no client is attached, the most\n"
+            "recently created session).  This lets you print the output of\n"
+            "any other window or pane of that session without switching away\n"
+            "from the one you are working in, or without attaching at all.\n\n"
+            "SESSION may be a literal name or the numeric ID shown by\n"
+            "'ianux list' (same IDs used by 'attach'/'kill').  WINDOW and\n"
+            "PANE are tmux's own indices.\n\n"
+            "By default only the visible area of the pane is printed; pass\n"
+            "-s/--scrollback to print the whole history.\n\n"
+            "Examples\n"
+            "--------\n"
+            "  ianux p abc:0.1      # visible output of pane 1, window 0 of 'abc'\n"
+            "  ianux p 2:0.0        # same, for session ID 2 (from 'list')\n"
+            "  ianux p 1.0          # pane 0 of window 1 in the current (or last-used) session\n"
+            "  ianux p -s 2:0.0     # full scrollback"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p.add_argument(
+        "target",
+        metavar="TARGET",
+        help="Pane to print: NAME|ID:WINDOW.PANE, or WINDOW.PANE for the current (or last-used) session.",
+    )
+    p.add_argument(
+        "-s", "--scrollback",
+        action="store_true",
+        default=False,
+        help="Print the pane's full scrollback instead of only the visible area.",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -487,7 +548,13 @@ def _add_dump_subparser(subparsers) -> None:
 def parse_args(
     argv: list[str] | None = None,
 ) -> (
-    SessionConfig | AttachConfig | KillConfig | ListConfig | LoadConfig | DumpConfig
+    SessionConfig
+    | AttachConfig
+    | KillConfig
+    | ListConfig
+    | LoadConfig
+    | DumpConfig
+    | PrintConfig
 ):
     """Parse argv and return the appropriate config dataclass."""
     # When argv is None read from sys.argv[1:] explicitly so that
@@ -509,6 +576,10 @@ def parse_args(
         return ListConfig()
     if namespace_parsed.command == "load":
         return _parse_load_config(namespace_parsed)
+    if namespace_parsed.command == "print":
+        return PrintConfig(
+            target=namespace_parsed.target, scrollback=namespace_parsed.scrollback
+        )
     if namespace_parsed.command == "dump":
         return DumpConfig(
             session_name=namespace_parsed.session_name,

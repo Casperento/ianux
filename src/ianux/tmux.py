@@ -266,21 +266,44 @@ class TmuxClient:
     # Pane inspection
     # ------------------------------------------------------------------
 
-    def capture_pane(self, session: str, window: str, pane: str) -> str:
-        """Capture the full scrollback of *pane* and return it as a string.
+    def capture_pane(
+        self, session: str, window: str, pane: str, *, scrollback: bool = True
+    ) -> str:
+        """Capture the contents of *pane* and return it as a string.
 
-        ``-S -`` tells tmux to start from the very beginning of the scrollback
-        buffer rather than only the visible terminal area, so the full output
-        of a long-running command is preserved.
+        With *scrollback* (the default) ``-S -`` tells tmux to start from the
+        very beginning of the scrollback buffer, so the full output of a
+        long-running command is preserved.  Without it only the visible
+        terminal area is returned.
         """
-        result = self._tmux(
-            ["capture-pane", "-p", "-S", "-", "-t", f"{session}:{window}.{pane}"]
-        )
+        args = ["capture-pane", "-p"]
+        if scrollback:
+            args += ["-S", "-"]
+        result = self._tmux(args + ["-t", f"{session}:{window}.{pane}"])
         if result.returncode != 0:
             raise AppError(
                 f"Failed to capture pane {pane} in session '{session}'."
             )
         return result.stdout or ""
+
+    def current_session_name(self) -> str:
+        """Return the name of the session the user last interacted with.
+
+        Inside tmux (``$TMUX``/``$TMUX_PANE`` set) that is the session of the
+        pane this process runs in.  Outside tmux, tmux picks the session of
+        the most recently active client, or the most recently created
+        session when no client is attached.
+
+        Raises AppError when no tmux server is running.
+        """
+        result = self._tmux(["display-message", "-p", "#{session_name}"])
+        name = (result.stdout or "").strip()
+        if result.returncode != 0 or not name:
+            raise AppError(
+                "Cannot determine the current session (no tmux session found)."
+                " Specify one: SESSION:WINDOW.PANE."
+            )
+        return name
 
     def pane_current_command(self, session: str, window: str, pane: str) -> str:
         """Return the name of the foreground process running in *pane*.

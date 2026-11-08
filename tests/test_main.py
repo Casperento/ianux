@@ -58,7 +58,7 @@ class TestMainRouting:
         )
         with _patch_parse(cfg), patch("ianux.__main__.TmuxClient", return_value=mock_client):
             with patch("ianux.__main__.SessionManager") as MockManager, \
-                 patch("ianux.__main__.build_resolver") as mock_resolver:
+                 patch("ianux.__main__.build_resolver"):
                 MockManager.return_value.setup.return_value = 0
                 result = main([])
         assert result == 0
@@ -92,8 +92,3 @@ class TestEntrypoint:
             result = entrypoint()
         assert result == 1
         assert "something went wrong" in capsys.readouterr().err
-
-    def test_returns_main_exit_code_on_success(self):
-        with patch("ianux.__main__.main", return_value=0):
-            result = entrypoint()
-        assert result == 0

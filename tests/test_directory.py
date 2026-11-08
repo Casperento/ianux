@@ -25,8 +25,7 @@ class TestExplicitResolver:
         sub = tmp_path / "mydir"
         sub.mkdir()
         resolver = ExplicitResolver(Path("~/mydir"))
-        path = resolver.resolve()
-        assert path.exists()
+        assert resolver.resolve() == sub.resolve()
 
     def test_missing_path_raises(self, tmp_path):
         resolver = ExplicitResolver(tmp_path / "nonexistent")

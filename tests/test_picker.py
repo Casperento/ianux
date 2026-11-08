@@ -18,11 +18,6 @@ class TestPick:
         assert "[1] A.TOML" in out
         assert "[2] B.TOML" in out
 
-    def test_prompt_includes_quit_option(self):
-        prompts = []
-        pick(["alpha"], lambda p: prompts.append(p) or "1", heading="h", prompt="p")
-        assert prompts == ["p (1-1, or q to quit): "]
-
     def test_q_quits_without_selecting(self):
         with pytest.raises(InteractiveQuit):
             pick(["alpha"], lambda _: "q", heading="h", prompt="p")

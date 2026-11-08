@@ -133,7 +133,7 @@ def load_session_config(
     return build_session_config(
         windows=windows,
         session_name=session_name,
-        detach=detach,
+        detach=detach or config.detach,
     )
 
 

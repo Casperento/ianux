@@ -55,7 +55,8 @@ load  (l)
     Load a TOML file describing a 'session' configuration (one or more
     windows, each with its own panes) and create/attach the session exactly
     as 'session' would.  TOML_FILE may be given directly; without it, pick
-    a file interactively from the default config directory.
+    a file interactively from the default config directory.  Pass ``-d`` to
+    create the session without attaching (overrides the TOML's ``detach``).
 
 dump  (d)
     Save an existing session's windows/panes/working-directories to a TOML
@@ -404,6 +405,7 @@ def _add_load_subparser(subparsers) -> None:
             "  name = \"logs\"\n"
             "  panes = 1\n\n"
             "  ianux load myproject.toml\n"
+            "  ianux load -d myproject.toml   # create without attaching\n"
             "  ianux load"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -415,6 +417,15 @@ def _add_load_subparser(subparsers) -> None:
         default=None,
         metavar="TOML_FILE",
         help="Path to the TOML config file. Omit to pick one interactively.",
+    )
+    p.add_argument(
+        "-d", "--detach",
+        action="store_true",
+        default=False,
+        help=(
+            "Create and initialise the session but do not attach to it,"
+            " overriding the TOML file's 'detach' setting."
+        ),
     )
 
 
@@ -597,7 +608,7 @@ def _parse_session_config(
 
 
 def _parse_load_config(parsed: argparse.Namespace) -> LoadConfig:
-    return LoadConfig(path=parsed.path)
+    return LoadConfig(path=parsed.path, detach=parsed.detach)
 
 
 def _parse_attach_config(parsed: argparse.Namespace) -> AttachConfig:

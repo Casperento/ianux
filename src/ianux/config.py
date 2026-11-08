@@ -166,9 +166,14 @@ class LoadConfig:
     When *path* is None (no TOML_FILE given), loader.py prompts the user to
     pick a file from _DEFAULT_CONFIG_DIR instead of reading a path given
     directly on the CLI.
+
+    *detach* (CLI ``-d/--detach``) forces the session to be created without
+    attaching, overriding the TOML's own ``detach`` value.  When False, the
+    TOML value (default false) applies.
     """
 
     path: Path | None = None
+    detach: bool = False
 
 
 @dataclass

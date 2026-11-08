@@ -16,6 +16,12 @@ def _write(tmp_path: Path, text: str) -> LoadConfig:
     return LoadConfig(path=path)
 
 
+class TestDetachOverride:
+    def test_cli_detach_overrides_toml_false(self, tmp_path):
+        path = _write(tmp_path, 'session_name = "x"\n').path
+        assert load_session_config(LoadConfig(path=path, detach=True)).detach is True
+
+
 class TestFullConfig:
     def test_all_fields(self, tmp_path):
         cfg = _write(

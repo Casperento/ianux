@@ -1,6 +1,6 @@
 # Command reference
 
-Ianux provides six subcommands. Run `ianux <command> --help` for the complete option list.
+Ianux provides seven subcommands. Run `ianux <command> --help` for the complete option list.
 
 | Command | Alias | Purpose |
 |---|---|---|
@@ -10,6 +10,7 @@ Ianux provides six subcommands. Run `ianux <command> --help` for the complete op
 | `kill` | `k` | Select or target a session, window, or pane to close |
 | `load` | `l` | Create a workspace from a TOML file |
 | `dump` | `d` | Save a session's pane directories to TOML |
+| `print` | `p` | Print a pane's current output without attaching |
 
 If the first argument is not a recognized subcommand, Ianux treats the invocation as `session`. With no arguments, it displays top-level help.
 
@@ -85,6 +86,19 @@ ianux kill my-session:0.*
 ```
 
 Targets use `SESSION`, `SESSION:WINDOW`, `SESSION:WINDOW.PANE`, or `SESSION:WINDOW.*`. `SESSION` can be a literal name or a numeric ID from `list`. Interactive mode shows a numbered list and repeats until you enter `q` or no sessions remain. The `.*` target lists pane indexes; enter an index to keep that pane, `n` to close all panes, or `q` to cancel.
+
+## `print`
+
+Print a pane's current output to stdout without attaching to its session:
+
+```bash
+ianux print my-session:0.1   # visible output of pane 1 in window 0
+ianux p 2:0.0                # same, using the numeric ID from list
+ianux p 1.0                  # pane 0 of window 1 in the current (or last-used) session
+ianux p -s 2:0.0             # full scrollback instead of the visible area
+```
+
+The target must be a full pane address: `SESSION:WINDOW.PANE`, or `WINDOW.PANE` to address the current session. The current session is the or last-used one, i.e. the session you are currently attached to: inside tmux, the session your shell runs in; from another terminal, the session of the most recently active tmux client (falling back to the most recently created session if no client is attached). This lets you print the output of any other window or pane of that session without switching away from the one you are working in, or without attaching at all. `SESSION` can be a literal name or a numeric ID from `list`. Session-only, window-only, and `.*` targets are rejected. Trailing blank lines in the visible area are trimmed.
 
 ## `load` and `dump`
 

@@ -2,7 +2,8 @@
 
 Each CLI subcommand has a matching ``*Config`` dataclass here; ``cli.py``
 builds one from parsed arguments and passes it to the corresponding manager
-(SessionManager, SessionKiller, SessionAttacher, loader.py, dumper.py).
+(SessionManager, SessionKiller, SessionAttacher, PanePrinter, loader.py,
+dumper.py).
 ``build_session_config()`` centralizes the panes-range checks and
 defaulting shared by the 'session' and 'load' subcommands.
 """
@@ -192,3 +193,19 @@ class DumpConfig:
 
     session_name: str | None = None
     output: Path | None = None
+
+
+@dataclass
+class PrintConfig:
+    """Parameters for the 'print' subcommand.
+
+    *target* is a fully-specified pane address: ``NAME|ID:WINDOW.PANE``, or
+    ``WINDOW.PANE`` (optionally written ``:WINDOW.PANE``) to address the
+    session you last interacted with (see 'print --help').
+
+    *scrollback* (CLI ``-s/--scrollback``) prints the pane's whole history
+    instead of just the visible area.
+    """
+
+    target: str
+    scrollback: bool = False

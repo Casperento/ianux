@@ -67,6 +67,7 @@ In `session` mode, `-p`/`--window-panes` sets each window's pane count and
 | `kill` | `k` | Kill a session, window, or pane |
 | `load` | `l` | Create a workspace from TOML |
 | `dump` | `d` | Save pane directories from a session as TOML |
+| `print` | `p` | Print a pane's current output without attaching |
 
 Run `ianux <command> --help` for current options. The [command reference](Commands.md) describes the main workflows and addressing rules.
 

@@ -60,6 +60,7 @@ Without `-p`/`--window-panes`, Ianux creates one window with four panes.
 | `kill` | `k` | Close a session, window, or pane |
 | `load` | `l` | Create a session from TOML |
 | `dump` | `d` | Save a session's pane directories to TOML |
+| `print` | `p` | Print a pane's current output without attaching |
 
 Run `ianux <command> --help` for options and examples. See the [wiki](wiki/Home.md)
 for the [full command reference](wiki/Commands.md), [TOML configuration guide](wiki/Configuration.md),

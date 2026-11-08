@@ -43,6 +43,7 @@ _RAISING_CALLS = [
     pytest.param(lambda c: c.select_layout("s", "tiled"), "Failed to apply", id="select_layout"),
     pytest.param(lambda c: c.list_panes("s"), "Failed to list panes", id="list_panes"),
     pytest.param(lambda c: c.send_keys("s", "0", "0", "make"), "Failed to initialize pane", id="send_keys"),
+    pytest.param(lambda c: c.capture_pane("s", "0", "0"), "Failed to capture pane", id="capture_pane"),
     pytest.param(
         lambda c: c.pane_current_path("s", "0", "0"), "Failed to query current directory",
         id="pane_current_path",
@@ -112,6 +113,21 @@ def test_tmux_missing_from_path_raises_app_error():
             ["send-keys", "-t", "sess:1.0", "make all", "C-m"],
             id="send_keys",
         ),
+        pytest.param(
+            lambda c: c.capture_pane("sess", "1", "0"),
+            ["capture-pane", "-p", "-S", "-", "-t", "sess:1.0"],
+            id="capture_pane-scrollback",
+        ),
+        pytest.param(
+            lambda c: c.capture_pane("sess", "1", "0", scrollback=False),
+            ["capture-pane", "-p", "-t", "sess:1.0"],
+            id="capture_pane-visible",
+        ),
+        pytest.param(
+            lambda c: c.current_session_name(),
+            ["display-message", "-p", "#{session_name}"],
+            id="current_session_name",
+        ),
     ],
 )
 def test_builds_expected_argv(call, argv):
@@ -128,6 +144,20 @@ def test_builds_expected_argv(call, argv):
 @pytest.mark.parametrize("returncode, expected", [(0, True), (1, False)])
 def test_session_exists_reflects_exit_code(returncode, expected):
     assert _client(returncode=returncode).session_exists("s") is expected
+
+
+def test_capture_pane_returns_stdout():
+    assert _client(stdout="hello\n").capture_pane("s", "0", "0") == "hello\n"
+
+
+def test_current_session_name_strips_output():
+    assert _client(stdout="work\n").current_session_name() == "work"
+
+
+@pytest.mark.parametrize("returncode, stdout", [(1, ""), (0, "")])
+def test_current_session_name_raises_outside_tmux(returncode, stdout):
+    with pytest.raises(AppError, match="no tmux session found"):
+        _client(returncode=returncode, stdout=stdout).current_session_name()
 
 
 def test_new_window_returns_window_index():

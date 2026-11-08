@@ -10,6 +10,7 @@ from ianux.__main__ import entrypoint, main
 from ianux.config import (
     AttachConfig,
     DumpConfig,
+    PrintConfig,
     KillConfig,
     LoadConfig,
     SessionConfig,
@@ -40,6 +41,7 @@ class TestMainRouting:
             pytest.param(AttachConfig(session_name="s"), "SessionAttacher", "attach", id="attach"),
             pytest.param(KillConfig(), "SessionKiller", "kill", id="kill"),
             pytest.param(DumpConfig(session_name="s"), "SessionDumper", "dump", id="dump"),
+            pytest.param(PrintConfig(target="s:0.0"), "PanePrinter", "print", id="print"),
         ],
     )
     def test_routes_config_to_handler(self, mock_client, cfg, handler, method):

@@ -1,3 +1,3 @@
 """ianux — spin up a named tmux development session with multiple panes."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

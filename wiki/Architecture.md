@@ -24,11 +24,12 @@ argv
 | `killer.py` | Parse targets and kill sessions, windows, or panes |
 | `loader.py` | Parse and validate TOML session configuration |
 | `dumper.py` | Write live session pane directories to TOML |
+| `printer.py` | Capture and print a single pane's output |
 | `tmux.py` | `TmuxClient`, the sole wrapper for tmux subprocess calls |
 
 `__main__.main()` dispatches the parsed config to an orchestrator. Each orchestrator receives a `TmuxClient`. `entrypoint()` catches `AppError`, prints a concise error to stderr, and returns exit status 1 rather than exposing a traceback.
 
-The `load` command converts its `LoadConfig` to a `SessionConfig` and then uses the same resolver and `SessionManager` path as the `session` command. `attach` and `kill` share target parsing and numeric session-ID resolution from `killer.py`. Interactive commands reuse the prompt helpers in `picker.py`.
+The `load` command converts its `LoadConfig` to a `SessionConfig` and then uses the same resolver and `SessionManager` path as the `session` command. `attach`, `kill`, and `print` share target parsing and numeric session-ID resolution from `killer.py`. Interactive commands reuse the prompt helpers in `picker.py`.
 
 ## tmux boundary
 

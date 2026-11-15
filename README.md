@@ -48,6 +48,9 @@ short form of `--window-name`. Repeat them to configure multiple windows:
 ianux session -p 2 -w editor -p 1 -w logs
 ```
 
+Add `-l`/`--window-layout` once per window to apply a tmux layout such as
+`main-vertical` or `tiled` (`dump` saves each window's layout for `load`).
+
 Without `-p`/`--window-panes`, Ianux creates one window with four panes.
 
 ## Commands

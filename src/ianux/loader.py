@@ -11,6 +11,7 @@ Schema
     name = "editor"                  # optional, default: tmux's own default
     panes = 2                        # optional int, default 4
     split_direction = "vertical"     # optional: "horizontal" or "vertical"
+    layout = "main-vertical"         # optional: tmux preset or dumped layout string
 
     [[window.pane]]
     directory = "~/src/frontend"     # optional, default: current working directory
@@ -70,7 +71,7 @@ from .exceptions import AppError
 from .picker import pick
 
 _ALLOWED_TOP_KEYS = frozenset({"session_name", "detach", "window"})
-_ALLOWED_WINDOW_KEYS = frozenset({"name", "panes", "split_direction", "pane"})
+_ALLOWED_WINDOW_KEYS = frozenset({"name", "panes", "split_direction", "layout", "pane"})
 _ALLOWED_PANE_KEYS = frozenset({"directory", "init_command"})
 
 # Mirrors the "Example" in the 'load --help' description — seeded into a
@@ -157,6 +158,10 @@ def _parse_window_table(table: Any) -> WindowConfig:
             f"[[window]] 'split_direction' must be a string, got {split_direction!r}."
         )
 
+    layout = table.get("layout")
+    if layout is not None and not isinstance(layout, str):
+        raise AppError(f"[[window]] 'layout' must be a string, got {layout!r}.")
+
     pane_tables = table.get("pane", [])
     if not isinstance(pane_tables, list):
         raise AppError("[[window]] 'pane' must be an array of tables (use [[window.pane]]).")
@@ -174,6 +179,7 @@ def _parse_window_table(table: Any) -> WindowConfig:
         init_commands=init_commands,
         name=name,
         split_direction=split_direction,
+        layout=layout,
     )
 
 

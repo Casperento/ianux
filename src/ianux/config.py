@@ -8,6 +8,7 @@ dumper.py).
 defaulting shared by the 'session' and 'load' subcommands.
 """
 
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -19,6 +20,14 @@ _DEFAULT_PANES = 4
 _MAX_PANES = 256
 _DEFAULT_SPLIT_DIRECTION = "horizontal"
 _SPLIT_DIRECTIONS = frozenset({"horizontal", "vertical"})
+_LAYOUT_PRESETS = frozenset(
+    {"even-horizontal", "even-vertical", "main-horizontal", "main-vertical", "tiled"}
+)
+# A tmux layout string as printed by #{window_layout}: "<checksum>,<W>x<H>,..."
+_LAYOUT_STRING_RE = re.compile(r"^[0-9a-f]{4},\d+x\d+,")
+# One leaf cell (a pane) of a layout string: "WxH,X,Y,PANE_ID"; container
+# cells are followed by "{" or "[" instead of a pane id.
+_LAYOUT_PANE_RE = re.compile(r"\d+x\d+,\d+,\d+,\d+")
 _DEFAULT_CONFIG_DIR = Path.home() / ".config" / "ianux" / "sessions"
 
 
@@ -35,6 +44,9 @@ class WindowConfig:
     *split_direction* sets the first split axis: ``horizontal`` divides the
     window top-to-bottom, while ``vertical`` divides it side-by-side. Splits
     alternate axes to create an evenly divided four-pane grid.
+    *layout* is an optional tmux layout (a preset name such as ``tiled`` or a
+    raw ``#{window_layout}`` string, e.g. from 'dump') applied after the
+    panes are created; None keeps the split-direction layout.
     """
 
     panes: int
@@ -42,6 +54,7 @@ class WindowConfig:
     init_commands: list[str]
     name: str | None = None
     split_direction: str = _DEFAULT_SPLIT_DIRECTION
+    layout: str | None = None
 
 
 @dataclass
@@ -67,6 +80,7 @@ def build_window_config(
     init_commands: list[str],
     name: str | None = None,
     split_direction: str = _DEFAULT_SPLIT_DIRECTION,
+    layout: str | None = None,
 ) -> WindowConfig:
     """Validate and assemble a WindowConfig from raw, undefaulted inputs.
 
@@ -82,6 +96,21 @@ def build_window_config(
     if split_direction not in _SPLIT_DIRECTIONS:
         choices = ", ".join(sorted(_SPLIT_DIRECTIONS))
         raise AppError(f"split_direction must be one of: {choices}.")
+    if layout is not None and not (
+        layout in _LAYOUT_PRESETS or _LAYOUT_STRING_RE.match(layout)
+    ):
+        presets = ", ".join(sorted(_LAYOUT_PRESETS))
+        raise AppError(
+            f"layout must be a tmux layout string or one of: {presets}."
+        )
+    if layout is not None and layout not in _LAYOUT_PRESETS:
+        # tmux may accept a mismatched layout string without failing, so
+        # check the pane count here rather than relying on select-layout.
+        layout_panes = len(_LAYOUT_PANE_RE.findall(layout))
+        if layout_panes != panes:
+            raise AppError(
+                f"layout describes {layout_panes} pane(s) but the window has {panes}."
+            )
 
     return WindowConfig(
         panes=panes,
@@ -89,6 +118,7 @@ def build_window_config(
         init_commands=init_commands or [_DEFAULT_INIT_COMMAND],
         name=name,
         split_direction=split_direction,
+        layout=layout,
     )
 
 

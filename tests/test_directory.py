@@ -27,6 +27,12 @@ class TestExplicitResolver:
         resolver = ExplicitResolver(Path("~/mydir"))
         assert resolver.resolve() == sub.resolve()
 
+    def test_env_var_expansion(self, tmp_path, monkeypatch):
+        """$VAR in the path should expand instead of being joined to the cwd (#21)."""
+        monkeypatch.setenv("IANUX_TEST_DIR", str(tmp_path))
+        resolver = ExplicitResolver(Path("$IANUX_TEST_DIR"))
+        assert resolver.resolve() == tmp_path.resolve()
+
     def test_missing_path_raises(self, tmp_path):
         resolver = ExplicitResolver(tmp_path / "nonexistent")
         with pytest.raises(AppError, match="does not exist"):

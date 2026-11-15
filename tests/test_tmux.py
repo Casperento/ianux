@@ -186,6 +186,17 @@ def test_list_sessions_names_empty(returncode, stdout):
     assert _client(returncode=returncode, stdout=stdout).list_sessions_names() == []
 
 
+@pytest.mark.parametrize(
+    "returncode, stdout, expected",
+    [
+        pytest.param(0, "a:b\t1\nc\t0\nd\t2\n\n", {"a:b": 1, "c": 0, "d": 2}, id="parsed"),
+        pytest.param(1, "", {}, id="server-not-running"),
+    ],
+)
+def test_session_attached_counts(returncode, stdout, expected):
+    assert _client(returncode=returncode, stdout=stdout).session_attached_counts() == expected
+
+
 def test_list_panes_returns_pane_indices():
     assert _client(stdout="0\n1\n2\n").list_panes("sess") == ["0", "1", "2"]
 

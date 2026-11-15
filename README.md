@@ -48,7 +48,7 @@ short form of `--window-name`. Repeat them to configure multiple windows:
 ianux session -p 2 -w editor -p 1 -w logs
 ```
 
-Without `-p`/`--window-panes`, Ianux creates one window with four panes.
+Without `-p`/`--window-panes`, Ianux creates one window with a single pane.
 
 ## Commands
 

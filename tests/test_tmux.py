@@ -1,6 +1,7 @@
 """Tests for ianux.tmux.TmuxClient."""
 
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -102,6 +103,21 @@ def test_tmux_missing_from_path_raises_app_error():
             lambda c: c.split_window("sess", 1, window="2"),
             ["split-window", "-t", "sess:2"],
             id="split_window-window",
+        ),
+        pytest.param(
+            lambda c: c.new_session("s", start_directory=Path("/x")),
+            ["new-session", "-d", "-s", "s", "-c", "/x"],
+            id="new_session-start-directory",
+        ),
+        pytest.param(
+            lambda c: c.new_window("s", start_directory=Path("/x")),
+            ["new-window", "-t", "s:", "-P", "-F", "#{window_index}", "-c", "/x"],
+            id="new_window-start-directory",
+        ),
+        pytest.param(
+            lambda c: c.split_window("s", 2, target_pane="1", start_directory=Path("/x")),
+            ["split-window", "-t", "s:0.1", "-c", "/x"],
+            id="split_window-start-directory",
         ),
         pytest.param(
             lambda c: c.list_panes("sess", window="3"),

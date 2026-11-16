@@ -38,7 +38,7 @@ session  (s)  — default
     attaching.  The session runs in the background; use
     ``ianux attach`` (or ``tmux attach-session``) to connect later::
 
-        ianux session -d --window-panes 4 --init-command 'echo Hello'
+        ianux session -d --window-panes 4 --init-command 'git status'
 
 attach  (a)
     List all open tmux sessions and let the user pick one interactively.
@@ -84,7 +84,6 @@ from typing import TypeVar
 from . import __version__
 from .config import (
     _DEFAULT_CONFIG_DIR,
-    _DEFAULT_INIT_COMMAND,
     _DEFAULT_PANES,
     _DEFAULT_SPLIT_DIRECTION,
     AttachConfig,
@@ -221,10 +220,10 @@ def _add_session_subparser(subparsers) -> None:
         default=None,
         metavar="CMD",
         help=(
-            "Command run in a pane after cd.  Repeat once per pane (in order,"
+            "Command run in a pane once it starts.  Repeat once per pane (in order,"
             " spanning window boundaries the same way as --directory)."
             " When fewer entries than the total pane count are given, the"
-            f" last entry is reused for remaining panes.  Default (single entry): {_DEFAULT_INIT_COMMAND!r}."
+            f" last entry is reused for remaining panes.  Default: no command."
         ),
     )
     p.add_argument(
@@ -410,12 +409,12 @@ def _add_load_subparser(subparsers) -> None:
             "                   layout string written by 'dump'; must match the pane count\n"
             "    [[window.pane]] zero or more tables, one per pane:\n"
             "      directory      optional string, default: current working directory\n"
-            "      init_command   optional string, default: 'echo Hello'\n\n"
+            "      init_command   optional string, default: none (no command)\n\n"
             "When a window's 'panes' exceeds the number of its [[window.pane]]\n"
             "tables, the last table's values are reused for the remaining\n"
             "panes of that window.  Extra tables beyond 'panes' are simply\n"
             "unused.  Omitting [[window]] entirely produces a single default\n"
-            f"window (panes={_DEFAULT_PANES}, cwd, 'echo Hello').\n\n"
+            f"window (panes={_DEFAULT_PANES}, cwd, no command).\n\n"
             "Example\n"
             "-------\n"
             "  session_name = \"demo\"\n\n"
@@ -635,7 +634,7 @@ def _slice_by_window(flat: list[_T], window_panes: list[int]) -> list[list[_T]]:
     exhausted before a window's turn does that window fall back to a
     single-item chunk carrying the last value handed out — this is what
     lets reuse-last cross a window boundary instead of resetting to that
-    window's cwd/echo Hello default.
+    window's cwd/no-command default.
     """
     windows: list[list[_T]] = []
     idx = 0
@@ -672,7 +671,7 @@ def _parse_session_config(
 
     # action="append" leaves None when the flag was never passed.
     # build_window_config() defaults an empty list to the current working
-    # directory / _DEFAULT_INIT_COMMAND.
+    # directory / no init command.
     flat_directories: list[Path] = (
         [Path(d) for d in parsed.directories] if parsed.directories else []
     )

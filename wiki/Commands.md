@@ -31,7 +31,7 @@ ianux session -p 2 -w editor \
   -p 1 -w logs
 ```
 
-Use `-p`/`--window-panes` once per window to set its pane count (1–256); if omitted, one window with a single pane is created. Optionally repeat `-w`/`--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and `echo Hello`.
+Use `-p`/`--window-panes` once per window to set its pane count (1–256); if omitted, one window with a single pane is created. Optionally repeat `-w`/`--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and no init command (panes just open a shell).
 
 The long forms `--window-panes` and `--window-name` can be used in place of `-p` and `-w`. Use `--split-direction horizontal` (the default) to make the first split top-to-bottom, or `--split-direction vertical` to make it side-by-side. Subsequent splits alternate axes to make four equal quadrants. This applies to every window created by the command.
 
@@ -41,7 +41,7 @@ Use `-l`/`--window-layout LAYOUT` to apply a tmux layout to a window once its pa
 ianux session -p 3 -l main-vertical -p 2 -l even-horizontal
 ```
 
-Use `--session-name NAME` to choose an exact name, `--detach` to create without attaching, and `--init-command CMD` to set commands run after changing into each pane's directory. The default command is `session`, so `ianux --window-panes 6` is equivalent to `ianux session --window-panes 6`.
+Use `--session-name NAME` to choose an exact name, `--detach` to create without attaching, and `--init-command CMD` to set the command run in each pane. Each pane starts directly in its `--directory` (tmux's own `-c` start directory), so no `cd` is typed into the pane; an empty command sends nothing. The default command is `session`, so `ianux --window-panes 6` is equivalent to `ianux session --window-panes 6`.
 
 When the requested name already exists, Ianux chooses a numbered variant (`name-1`, `name-2`, …) and leaves the existing session untouched. Unnamed sessions receive a generated `job_DDHHMMSS` name.
 

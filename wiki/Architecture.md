@@ -38,3 +38,5 @@ All tmux commands go through `TmuxClient` in `tmux.py`; other modules do not con
 ## Session layout
 
 Each window is laid out independently. Up to four panes are created through sequential splits and arranged with tmux's tiled layout. For larger counts, the existing 2×2 base is subdivided round-robin and re-tiled after each split to keep the result balanced.
+
+Panes never receive a `cd`: each pane gets its directory through tmux's `-c` when it is created (`new-session`/`new-window` for the first pane, `split-window` for the rest). tmux inserts a split pane right after its target and renumbers the panes behind it, so creation order differs from the final pane index (with four panes, the fourth pane created ends up as pane 1). `_creation_to_index` in `session.py` replays the split sequence on a plain list to give each split the directory of the index it will end up with, so directory N always lands on pane N. Only the init command is sent with `send-keys`.

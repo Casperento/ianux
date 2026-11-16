@@ -1,6 +1,12 @@
 <div align="center">
   <img src="assets/ianux-logo.png" alt="Ianux logo" width="180">
   <p>A quick-to-use tmux wrapper for managing sessions.</p>
+  <p>
+    <a href="https://github.com/Casperento/ianux/actions/workflows/ci.yml"><img src="https://github.com/Casperento/ianux/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <a href="https://pypi.org/project/ianux/"><img src="https://img.shields.io/pypi/v/ianux" alt="PyPI version"></a>
+    <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
+    <a href="LICENSE"><img src="https://img.shields.io/github/license/Casperento/ianux" alt="License"></a>
+  </p>
 </div>
 
 ianux is a quick-to-use Python command-line tool for creating and restoring

@@ -33,3 +33,12 @@ uv build
 ```
 
 This produces a wheel and source distribution in `dist/`. Use `uv build --clear` to remove previous build outputs before building.
+
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and every push to `main`. A newer push to the same pull request cancels the older run.
+
+- `test (3.11)`, `test (3.12)`, `test (3.13)`, `test (3.14)`: install `tmux` from apt, run `uv sync --locked`, then `uv run pytest`. This runs every test, including the e2e tests against a real tmux server.
+- `build`: runs `uv build` on the runner and uploads `dist/` as a workflow artifact. This only checks that the package builds. Nothing is published.
+
+The repository owner marks these checks as required for `main` in the branch protection settings. Releases and PyPI publishing are done manually.

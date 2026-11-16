@@ -9,6 +9,7 @@ the client fully testable without a live tmux installation.
 """
 
 import subprocess
+from pathlib import Path
 from typing import Callable
 
 from .exceptions import AppError
@@ -45,15 +46,24 @@ class TmuxClient:
         """Return True if a session named *name* is currently open."""
         return self._tmux(["has-session", "-t", name]).returncode == 0
 
-    def new_session(self, name: str, window_name: str | None = None) -> None:
+    def new_session(
+        self,
+        name: str,
+        window_name: str | None = None,
+        start_directory: Path | None = None,
+    ) -> None:
         """Create a new detached session named *name*.
 
         *window_name* names the session's initial window (tmux's window 0);
-        omitted, tmux assigns its own default name.
+        omitted, tmux assigns its own default name. *start_directory* is the
+        working directory of the first pane (tmux ``-c``); tmux also uses it
+        as the session's default directory for panes created later.
         """
         args = ["new-session", "-d", "-s", name]
         if window_name is not None:
             args += ["-n", window_name]
+        if start_directory is not None:
+            args += ["-c", str(start_directory)]
         result = self._tmux(args)
         if result.returncode != 0:
             raise AppError(f"Failed to create tmux session '{name}'.")
@@ -100,16 +110,24 @@ class TmuxClient:
             counts[name] = int(count) if count.strip().isdigit() else 0
         return counts
 
-    def new_window(self, session: str, name: str | None = None) -> str:
+    def new_window(
+        self,
+        session: str,
+        name: str | None = None,
+        start_directory: Path | None = None,
+    ) -> str:
         """Create a new window in *session*; return the index tmux assigned.
 
         Uses ``-P -F`` to have tmux print back the real window index rather
         than assuming sequential numbering (which doesn't hold when
         ``base-index`` is customised or windows have been removed).
+        *start_directory* is the first pane's working directory (tmux ``-c``).
         """
         args = ["new-window", "-t", f"{session}:", "-P", "-F", "#{window_index}"]
         if name is not None:
             args += ["-n", name]
+        if start_directory is not None:
+            args += ["-c", str(start_directory)]
         result = self._tmux(args)
         if result.returncode != 0:
             raise AppError(f"Failed to create a new window in session '{session}'.")
@@ -183,6 +201,7 @@ class TmuxClient:
         window: str = "0",
         target_pane: str | None = None,
         direction: str = "horizontal",
+        start_directory: Path | None = None,
     ) -> None:
         """Split a window to add one pane.
 
@@ -190,7 +209,8 @@ class TmuxClient:
         split.  When omitted, tmux splits whichever pane is currently active,
         which is fine for the initial sequential creation pass. ``horizontal``
         stacks panes top-to-bottom using tmux's default split; ``vertical``
-        places them side-by-side using tmux's ``-h`` flag.
+        places them side-by-side using tmux's ``-h`` flag. *start_directory*
+        is the new pane's working directory (tmux ``-c``).
         """
         if target_pane is not None:
             target = f"{session}:{window}.{target_pane}"
@@ -202,6 +222,8 @@ class TmuxClient:
         elif direction != "horizontal":
             raise AppError("split direction must be 'horizontal' or 'vertical'.")
         args += ["-t", target]
+        if start_directory is not None:
+            args += ["-c", str(start_directory)]
         result = self._tmux(args)
         if result.returncode != 0:
             raise AppError(

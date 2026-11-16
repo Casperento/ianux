@@ -55,6 +55,16 @@ class TestCreatePanes:
         # Phase-2: split_window called 2 more times
         assert mock_client.split_window.call_count == 5
 
+    def test_each_split_starts_in_the_directory_of_its_final_index(self, mock_client):
+        """tmux inserts a split pane right after its target, so the 4th pane
+        created ends up at index 1: it must get directory 1, not directory 3."""
+        dirs = [Path(f"/work/{n}") for n in range(4)]
+        mock_client.list_panes.return_value = ["0", "1"]
+        SessionManager(mock_client)._create_panes("sess", "0", 4, directories=dirs)
+        started = [c.kwargs["start_directory"] for c in mock_client.split_window.call_args_list]
+        # Creation order → final index is [0, 2, 3, 1] (see _creation_to_index).
+        assert started == [dirs[2], dirs[3], dirs[1]]
+
     def test_non_default_window_threaded_through(self, mock_client):
         self._run(mock_client, 6, window="3")
         for c in mock_client.split_window.call_args_list:
@@ -70,41 +80,30 @@ class TestCreatePanes:
 
 
 class TestInitializePanes:
-    def test_per_pane_directories_and_commands_in_order(self, mock_client):
+    def test_per_pane_commands_in_order_without_cd(self, mock_client):
         mock_client.list_panes.return_value = ["0", "1", "2"]
-        dirs = [Path("/work/a"), Path("/work/b"), Path("/work/c")]
-        SessionManager(mock_client)._initialize_panes("sess", "0", dirs, ["cmd0", "cmd1", "cmd2"])
+        SessionManager(mock_client)._initialize_panes("sess", "0", ["cmd0", "cmd1", "cmd2"])
         sent = [c.args[3] for c in mock_client.send_keys.call_args_list]
-        assert sent == [
-            "cd /work/a && cmd0",
-            "cd /work/b && cmd1",
-            "cd /work/c && cmd2",
-        ]
+        assert sent == ["cmd0", "cmd1", "cmd2"]
 
     def test_shorter_lists_reuse_last_entry(self, mock_client):
-        """Fewer dirs/commands than panes → the last entry fills the remaining panes."""
+        """Fewer commands than panes → the last entry fills the remaining panes."""
         mock_client.list_panes.return_value = ["0", "1", "2"]
-        SessionManager(mock_client)._initialize_panes(
-            "sess", "0", [Path("/x"), Path("/y")], ["alpha"]
-        )
+        SessionManager(mock_client)._initialize_panes("sess", "0", ["alpha", "beta"])
         sent = [c.args[3] for c in mock_client.send_keys.call_args_list]
-        assert sent == ["cd /x && alpha", "cd /y && alpha", "cd /y && alpha"]
+        assert sent == ["alpha", "beta", "beta"]
 
-    def test_empty_init_command_sends_bare_cd(self, mock_client):
-        """An empty init_command (as written by 'dump') must not leave a
-        dangling '&&' — only the cd should be sent."""
+    def test_empty_init_command_sends_nothing(self, mock_client):
+        """An empty init_command (as written by 'dump') sends no keys at all:
+        the pane already starts in its directory."""
         mock_client.list_panes.return_value = ["0"]
-        manager = SessionManager(mock_client)
-        manager._initialize_panes("sess", "0", [Path("/work/dir")], [""])
-        calls = mock_client.send_keys.call_args_list
-        assert len(calls) == 1
-        assert calls[0].args[3] == "cd /work/dir"
-        assert "&&" not in calls[0].args[3]
+        SessionManager(mock_client)._initialize_panes("sess", "0", [""])
+        mock_client.send_keys.assert_not_called()
 
     def test_non_default_window_threaded_through(self, mock_client):
         mock_client.list_panes.return_value = ["0"]
         manager = SessionManager(mock_client)
-        manager._initialize_panes("sess", "2", [Path("/work")], ["bash"])
+        manager._initialize_panes("sess", "2", ["bash"])
         mock_client.list_panes.assert_called_with("sess", window="2")
         assert mock_client.send_keys.call_args.args[1] == "2"
 

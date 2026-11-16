@@ -221,7 +221,7 @@ def _add_session_subparser(subparsers) -> None:
         default=None,
         metavar="CMD",
         help=(
-            "Command run in a pane after cd.  Repeat once per pane (in order,"
+            "Command run in a pane once it starts.  Repeat once per pane (in order,"
             " spanning window boundaries the same way as --directory)."
             " When fewer entries than the total pane count are given, the"
             f" last entry is reused for remaining panes.  Default (single entry): {_DEFAULT_INIT_COMMAND!r}."

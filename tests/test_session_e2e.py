@@ -44,8 +44,8 @@ def _session_exists(session: str) -> bool:
 def _wait_for_pane_path(session: str, window: str, pane: str, expected: str, timeout: float = 2.0) -> str:
     """Poll pane_current_path until it matches *expected* or *timeout* elapses.
 
-    send-keys is fire-and-forget: the shell needs a moment to process the
-    'cd' before its cwd reflects it, so a single immediate read is flaky.
+    Panes start in their directory via tmux -c, but the pane's shell may
+    still be starting, so poll briefly rather than trusting a single read.
     """
     deadline = time.monotonic() + timeout
     last = ""
@@ -59,17 +59,18 @@ def _wait_for_pane_path(session: str, window: str, pane: str, expected: str, tim
 
 class TestSessionCreation:
     def test_creates_session_with_panes_in_requested_directories(self, e2e_session_name, tmp_path):
-        dira = tmp_path / "frontend"
-        dirb = tmp_path / "backend"
-        dira.mkdir()
-        dirb.mkdir()
+        # 5 panes exercises tmux's renumbering when splits insert panes
+        # mid-list (both the 2x2 base and the round-robin phase): directory N
+        # must still land on pane index N.
+        dirs = [tmp_path / f"pane{n}" for n in range(5)]
+        for d in dirs:
+            d.mkdir()
 
         result = run_ianux(
             "session",
-            "--window-panes", "2",
+            "--window-panes", "5",
             "--session-name", e2e_session_name,
-            "--directory", str(dira),
-            "--directory", str(dirb),
+            *[arg for d in dirs for arg in ("--directory", str(d))],
             "--init-command", "",
             "--detach",
         )
@@ -78,9 +79,9 @@ class TestSessionCreation:
         assert _session_exists(e2e_session_name)
 
         panes = _pane_indices(e2e_session_name)
-        assert len(panes) == 2
-        assert _wait_for_pane_path(e2e_session_name, "0", panes[0], str(dira)) == str(dira)
-        assert _wait_for_pane_path(e2e_session_name, "0", panes[1], str(dirb)) == str(dirb)
+        assert len(panes) == 5
+        for pane, expected in zip(panes, dirs):
+            assert _wait_for_pane_path(e2e_session_name, "0", pane, str(expected)) == str(expected)
 
         # --detach must print a ready confirmation and never attach the terminal.
         assert e2e_session_name in result.stdout

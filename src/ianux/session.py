@@ -6,7 +6,6 @@ directory decision to a DirectoryResolver (Strategy), keeping its own
 responsibility to orchestration only.
 """
 
-import shlex
 from pathlib import Path
 
 from .config import _DEFAULT_SPLIT_DIRECTION, SessionConfig
@@ -39,21 +38,31 @@ class SessionManager:
 
         session_name = self._unique_session_name(config.session_name)
 
-        self._client.new_session(session_name, window_name=first_window.name)
+        self._client.new_session(
+            session_name,
+            window_name=first_window.name,
+            start_directory=_directory_for(first_directories, 0),
+        )
         self._create_panes(
-            session_name, "0", first_window.panes, first_window.split_direction
+            session_name, "0", first_window.panes, first_window.split_direction,
+            first_directories,
         )
         self._apply_layout(session_name, "0", first_window.layout)
-        self._initialize_panes(session_name, "0", first_directories, first_window.init_commands)
+        self._initialize_panes(session_name, "0", first_window.init_commands)
 
         for window in config.windows[1:]:
-            window_index = self._client.new_window(session_name, name=window.name)
             window_directories = self._resolve_directories(window.directories)
+            window_index = self._client.new_window(
+                session_name,
+                name=window.name,
+                start_directory=_directory_for(window_directories, 0),
+            )
             self._create_panes(
-                session_name, window_index, window.panes, window.split_direction
+                session_name, window_index, window.panes, window.split_direction,
+                window_directories,
             )
             self._apply_layout(session_name, window_index, window.layout)
-            self._initialize_panes(session_name, window_index, window_directories, window.init_commands)
+            self._initialize_panes(session_name, window_index, window.init_commands)
 
         if len(config.windows) > 1:
             self._client.select_window(session_name, "0")
@@ -91,6 +100,7 @@ class SessionManager:
         window: str,
         pane_count: int,
         split_direction: str = _DEFAULT_SPLIT_DIRECTION,
+        directories: list[Path] | None = None,
     ) -> None:
         """Create panes in an alternating split pattern.
 
@@ -99,15 +109,26 @@ class SessionManager:
         pane across that same axis. This makes a balanced 2×2 grid. Larger
         counts use that grid as a base and return to tmux's tiled layout while
         subdividing its panes to keep further splits viable.
+
+        Each new pane starts in its own entry of *directories* (tmux ``-c``),
+        chosen by the pane index it ends up with once every split is done (see
+        ``_creation_to_index``), so directory N always lands on pane N.
         """
         if pane_count <= 1:
             return
+
+        directories = directories or []
+        final_index = _creation_to_index(pane_count)
+
+        def start_dir(created: int) -> Path | None:
+            return _directory_for(directories, final_index[created])
 
         other_direction = "horizontal" if split_direction == "vertical" else "vertical"
 
         # The first split always divides the original pane in half.
         self._client.split_window(
-            session_name, 2, window=window, direction=split_direction
+            session_name, 2, window=window, direction=split_direction,
+            **_dir_kwarg(start_dir(1)),
         )
         if pane_count == 2:
             layout = "even-horizontal" if split_direction == "vertical" else "even-vertical"
@@ -121,7 +142,7 @@ class SessionManager:
         second_pane = pane_indices[-1]
         self._client.split_window(
             session_name, 3, window=window, target_pane=second_pane,
-            direction=other_direction,
+            direction=other_direction, **_dir_kwarg(start_dir(2)),
         )
 
         if pane_count == 3:
@@ -131,7 +152,7 @@ class SessionManager:
         # quadrants.
         self._client.split_window(
             session_name, 4, window=window, target_pane=first_pane,
-            direction=other_direction,
+            direction=other_direction, **_dir_kwarg(start_dir(3)),
         )
         if pane_count == 4:
             return
@@ -149,6 +170,7 @@ class SessionManager:
                 window=window,
                 target_pane=target,
                 direction=split_direction,
+                **_dir_kwarg(start_dir(4 + i)),
             )
             self._client.select_layout(session_name, "tiled", window=window)
 
@@ -166,19 +188,63 @@ class SessionManager:
         self,
         session_name: str,
         window: str,
-        directories: list[Path],
         init_commands: list[str],
     ) -> None:
-        """Send a per-pane cd + init command to every pane.
+        """Send each pane its init command; panes already start in their directory.
 
-        Both *directories* and *init_commands* are indexed by pane position.
-        When either list is shorter than the number of panes, its last entry
-        is reused for all remaining panes so that a single-entry list applies
-        uniformly (the common case).
+        *init_commands* is indexed by pane position. When it is shorter than
+        the number of panes, its last entry is reused for the remaining panes
+        so that a single-entry list applies uniformly (the common case). An
+        empty command (as written by 'dump') sends nothing.
         """
+        if not any(cmd.strip() for cmd in init_commands):
+            return
         for i, pane_index in enumerate(self._client.list_panes(session_name, window=window)):
-            target_dir = directories[min(i, len(directories) - 1)]
             cmd = init_commands[min(i, len(init_commands) - 1)]
-            cd = f"cd {shlex.quote(str(target_dir))}"
-            command = f"{cd} && {cmd}" if cmd.strip() else cd
-            self._client.send_keys(session_name, window, pane_index, command)
+            if cmd.strip():
+                self._client.send_keys(session_name, window, pane_index, cmd)
+
+
+def _directory_for(directories: list[Path], index: int) -> Path | None:
+    """Return the directory for pane *index*, reusing the last entry; None if empty."""
+    if not directories:
+        return None
+    return directories[min(index, len(directories) - 1)]
+
+
+def _dir_kwarg(directory: Path | None) -> dict:
+    """``{"start_directory": directory}`` when set, else nothing (keeps call args minimal)."""
+    return {} if directory is None else {"start_directory": directory}
+
+
+def _creation_to_index(pane_count: int) -> list[int]:
+    """Return the final pane index (position) of each pane, in creation order.
+
+    Replays ``SessionManager._create_panes``'s split sequence on a plain
+    list. tmux inserts a new pane directly after its split target in index
+    order, renumbering the panes behind it, so creation order and final index
+    differ (with 4 panes, the 4th pane created ends up at index 1). The
+    split direction never affects the order, only the geometry.
+
+    Targets are replayed exactly as ``_create_panes`` passes them: index
+    strings read once from ``list_panes``, so beyond 4 panes the round-robin
+    targets the pane *currently* at that index, not the original base pane.
+    """
+    panes = [0]  # creation numbers, in pane-index order
+
+    def split(target_position: int) -> None:
+        panes.insert(target_position + 1, len(panes))
+
+    if pane_count >= 2:
+        split(0)  # active pane: the window's only pane
+    if pane_count >= 3:
+        split(1)  # the second pane (pane_indices[-1] of a 2-pane window)
+    if pane_count >= 4:
+        split(0)  # the original pane
+    for i in range(pane_count - 4):
+        split(i % 4)  # base_indices[i % 4], read before these splits
+
+    final = [0] * pane_count
+    for position, created in enumerate(panes):
+        final[created] = position
+    return final

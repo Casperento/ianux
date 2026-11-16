@@ -9,7 +9,7 @@ Schema
 
     [[window]]
     name = "editor"                  # optional, default: tmux's own default
-    panes = 2                        # optional int, default 4
+    panes = 2                        # optional int, default 1
     split_direction = "vertical"     # optional: "horizontal" or "vertical"
     layout = "main-vertical"         # optional: tmux preset or dumped layout string
 
@@ -34,7 +34,7 @@ number of its ``[[window.pane]]`` tables, the last table's values are reused
 for the remaining panes of *that window*; extra tables beyond ``panes`` are
 simply unused. Omitting ``[[window.pane]]`` entirely falls back to the
 current working directory / ``"echo Hello"`` for that window. Omitting
-``[[window]]`` entirely produces a single default window (panes=4, cwd,
+``[[window]]`` entirely produces a single default window (panes=1, cwd,
 ``"echo Hello"``), exactly like omitting ``-C``/``-c``/``--window-panes`` on the
 CLI.
 

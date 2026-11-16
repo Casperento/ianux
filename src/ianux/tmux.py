@@ -79,6 +79,27 @@ class TmuxClient:
             if line.strip()
         )
 
+    def session_attached_counts(self) -> dict[str, int]:
+        """Return ``{session_name: attached_client_count}`` for every session.
+
+        Uses the ``#{session_attached}`` format variable rather than the
+        ``(attached)`` marker of the default ``list-sessions`` output, which
+        is not printed by every tmux version.  Returns an empty dict when the
+        tmux server is not running.
+        """
+        result = self._tmux(
+            ["list-sessions", "-F", "#{session_name}\t#{session_attached}"]
+        )
+        if result.returncode != 0:
+            return {}
+        counts: dict[str, int] = {}
+        for line in (result.stdout or "").splitlines():
+            name, sep, count = line.rpartition("\t")
+            if not sep or not name:
+                continue
+            counts[name] = int(count) if count.strip().isdigit() else 0
+        return counts
+
     def new_window(self, session: str, name: str | None = None) -> str:
         """Create a new window in *session*; return the index tmux assigned.
 

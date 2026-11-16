@@ -31,7 +31,7 @@ ianux session -p 2 -w editor \
   -p 1 -w logs
 ```
 
-Use `-p`/`--window-panes` once per window to set its pane count (1–256); if omitted, one window with four panes is created. Optionally repeat `-w`/`--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and `echo Hello`.
+Use `-p`/`--window-panes` once per window to set its pane count (1–256); if omitted, one window with a single pane is created. Optionally repeat `-w`/`--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and `echo Hello`.
 
 The long forms `--window-panes` and `--window-name` can be used in place of `-p` and `-w`. Use `--split-direction horizontal` (the default) to make the first split top-to-bottom, or `--split-direction vertical` to make it side-by-side. Subsequent splits alternate axes to make four equal quadrants. This applies to every window created by the command.
 
@@ -66,7 +66,15 @@ command is reused. Attach later with `ianux attach` (or `tmux attach-session`).
 ianux list
 ```
 
-Displays sessions with a numeric ID, name, window/pane counts, creation time, and terminal size. IDs are assigned alphabetically by session name and are used by `attach`, `kill`, and `dump`.
+Displays sessions with a numeric ID, name, attached status, window/pane counts, creation time, and terminal size. IDs are assigned alphabetically by session name and are used by `attach`, `kill`, and `dump`.
+
+The `Attached` column shows whether a session is attached in another terminal: `yes` for one client, `yes (N)` when N clients are attached, or `-` when the session is detached. It is read from tmux's `#{session_attached}` value, so it works on every tmux version, including those whose `tmux ls` output does not print `(attached)`.
+
+```
+  #  Name          Attached  Window(s)/Pane(s)          Created              Size
+  1  dev           yes       0 : 0, 1, 2  (3 panes)     Nov 15 2026  20:31   236x64
+  2  logs          -         0 : 0  (1 pane)            Nov 15 2026  20:40   236x64
+```
 
 ## `attach`
 

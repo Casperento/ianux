@@ -211,6 +211,7 @@ def _add_session_subparser(subparsers) -> None:
             " When fewer entries than the total pane count are given, the"
             " last entry is reused for remaining panes."
             " If omitted entirely, the current working directory is used."
+            " ~ and environment variables ($VAR, ${VAR}) are expanded."
         ),
     )
     p.add_argument(
@@ -279,7 +280,7 @@ def _add_session_subparser(subparsers) -> None:
         help=(
             "Pane count for one window.  Repeat once per window (in order) to"
             " create multiple windows.  Defaults to one window with"
-            f" {_DEFAULT_PANES} panes."
+            f" {_DEFAULT_PANES} pane(s)."
         ),
     )
 
@@ -403,7 +404,7 @@ def _add_load_subparser(subparsers) -> None:
             "  detach          optional bool, default false\n"
             "  [[window]]      zero or more tables, one per window:\n"
             "    name           optional string, default: tmux's own default\n"
-            "    panes          optional int, default 4\n"
+            f"    panes          optional int, default {_DEFAULT_PANES}\n"
             "    split_direction optional first split axis: 'horizontal' (top/bottom) or 'vertical' (side-by-side), default horizontal\n"
             "    layout         optional tmux layout preset (e.g. 'tiled', 'main-vertical') or a\n"
             "                   layout string written by 'dump'; must match the pane count\n"
@@ -414,7 +415,7 @@ def _add_load_subparser(subparsers) -> None:
             "tables, the last table's values are reused for the remaining\n"
             "panes of that window.  Extra tables beyond 'panes' are simply\n"
             "unused.  Omitting [[window]] entirely produces a single default\n"
-            "window (panes=4, cwd, 'echo Hello').\n\n"
+            f"window (panes={_DEFAULT_PANES}, cwd, 'echo Hello').\n\n"
             "Example\n"
             "-------\n"
             "  session_name = \"demo\"\n\n"

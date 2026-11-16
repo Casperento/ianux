@@ -77,7 +77,7 @@ class TestParseArgsSession:
         assert isinstance(cfg, SessionConfig)
         assert len(cfg.windows) == 1
         win = cfg.windows[0]
-        assert win.panes == 4  # _DEFAULT_PANES
+        assert win.panes == 1  # _DEFAULT_PANES
         assert win.directories == [Path.cwd()]
         assert len(win.init_commands) == 1 and win.init_commands[0]  # non-empty default
         assert cfg.detach is False

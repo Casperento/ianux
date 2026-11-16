@@ -1,5 +1,6 @@
 """Direct directory resolution for session working directories."""
 
+import os
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -27,7 +28,10 @@ class ExplicitResolver:
         self._directory = directory
 
     def resolve(self) -> Path:
-        target = self._directory.expanduser().resolve()
+        # Expand $VAR/${VAR} first (e.g. a single-quoted -C '$PWD' reaches us
+        # unexpanded), then ~, so neither is mistaken for a relative path.
+        expanded = os.path.expandvars(str(self._directory))
+        target = Path(expanded).expanduser().resolve()
         if not target.exists() or not target.is_dir():
             raise AppError(
                 f"Target directory does not exist or is not a directory: {target}"

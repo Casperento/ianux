@@ -16,7 +16,7 @@ from pathlib import Path
 from .exceptions import AppError
 
 _DEFAULT_INIT_COMMAND = "echo Hello"
-_DEFAULT_PANES = 4
+_DEFAULT_PANES = 1
 _MAX_PANES = 256
 _DEFAULT_SPLIT_DIRECTION = "horizontal"
 _SPLIT_DIRECTIONS = frozenset({"horizontal", "vertical"})

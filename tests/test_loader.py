@@ -90,7 +90,7 @@ class TestDefaults:
     def test_empty_file_uses_all_defaults(self, tmp_path):
         result = load_session_config(_write(tmp_path, ""))
         assert result.windows == [
-            WindowConfig(panes=4, directories=[Path.cwd()], init_commands=["echo Hello"])
+            WindowConfig(panes=1, directories=[Path.cwd()], init_commands=["echo Hello"])
         ]
         assert result.detach is False
         assert re.match(r"^job_\d{8}$", result.session_name)
@@ -115,9 +115,9 @@ class TestDefaults:
         assert result.windows[0].directories == [Path("/tmp"), Path.cwd()]
         assert result.windows[0].init_commands == ["echo Hello", "bash"]
 
-    def test_window_panes_defaults_to_four(self, tmp_path):
+    def test_window_panes_defaults_to_one(self, tmp_path):
         cfg = _write(tmp_path, '[[window]]\n[[window.pane]]\ndirectory = "/tmp"\n')
-        assert load_session_config(cfg).windows[0].panes == 4
+        assert load_session_config(cfg).windows[0].panes == 1
 
 
 class TestPanePadding:

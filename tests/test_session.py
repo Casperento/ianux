@@ -11,6 +11,7 @@ over asserting the exact call sequence directly.
 
 from pathlib import Path
 
+from ianux.config import SessionConfig, WindowConfig
 from ianux.session import SessionManager
 
 
@@ -106,3 +107,24 @@ class TestInitializePanes:
         manager._initialize_panes("sess", "2", [Path("/work")], ["bash"])
         mock_client.list_panes.assert_called_with("sess", window="2")
         assert mock_client.send_keys.call_args.args[1] == "2"
+
+
+class TestWindowLayout:
+    def test_layout_applied_after_panes_are_created(self, mock_client, tmp_path):
+        mock_client.session_exists.return_value = False
+        mock_client.list_panes.return_value = ["0", "1", "2"]
+        config = SessionConfig(
+            windows=[WindowConfig(
+                panes=3, directories=[tmp_path], init_commands=["x"], layout="main-vertical",
+            )],
+            session_name="sess",
+            detach=True,
+        )
+
+        SessionManager(mock_client).setup(config, resolver=None)
+
+        names = [c[0] for c in mock_client.method_calls]
+        last_split = max(i for i, n in enumerate(names) if n == "split_window")
+        layout_call = names.index("select_layout")
+        assert layout_call > last_split
+        assert mock_client.select_layout.call_args.args[:2] == ("sess", "main-vertical")

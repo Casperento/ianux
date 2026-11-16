@@ -137,6 +137,26 @@ class TmuxClient:
             names[index] = name
         return names
 
+    def window_layouts(self, session: str) -> dict[str, str]:
+        """Return ``{window_index: window_layout}`` for every window in *session*.
+
+        The layout is tmux's own ``#{window_layout}`` string, which
+        ``select_layout`` accepts back verbatim.
+        """
+        result = self._tmux(
+            ["list-windows", "-t", session, "-F", "#{window_index}\t#{window_layout}"]
+        )
+        if result.returncode != 0:
+            return {}
+        layouts: dict[str, str] = {}
+        for line in (result.stdout or "").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            index, _, layout = line.partition("\t")
+            layouts[index] = layout
+        return layouts
+
     def list_sessions(self) -> list[str]:
         """Return names of all open sessions names sorted alphabetically.
 

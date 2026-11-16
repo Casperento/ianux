@@ -2,7 +2,9 @@
 
 Captures the current working directory of every pane in every window of a
 tmux session and writes them out in the same nested schema ``loader.py``
-reads for the 'load' subcommand ([[window]] / [[window.pane]]).
+reads for the 'load' subcommand ([[window]] / [[window.pane]]).  Each
+window's tmux layout string (``#{window_layout}``) is written as ``layout``
+so 'load' restores the exact pane arrangement.
 ``init_command`` is always written as an empty string — dump only records
 directories; commands are filled in by hand afterwards. ``session_name``
 is written as the dumped session's full name, so reloading the file
@@ -46,15 +48,16 @@ class SessionDumper:
 
         win_panes = self._client.list_panes_all(session)
         names = self._client.window_names(session)
+        layouts = self._client.window_layouts(session)
 
-        windows: list[tuple[str, list[str]]] = []
+        windows: list[tuple[str, str, list[str]]] = []
         total_panes = 0
         for window in sorted(win_panes, key=lambda w: (int(w) if w.isdigit() else w)):
             panes = win_panes[window]
             directories = [
                 self._client.pane_current_path(session, window, p) for p in panes
             ]
-            windows.append((names.get(window, ""), directories))
+            windows.append((names.get(window, ""), layouts.get(window, ""), directories))
             total_panes += len(panes)
 
         output_dir = config.output or _DEFAULT_CONFIG_DIR
@@ -82,8 +85,8 @@ class SessionDumper:
         return session
 
 
-def _render_toml(session: str, windows: list[tuple[str, list[str]]]) -> str:
-    """Render *windows* (name, directories) pairs as a 'load'-compatible TOML document.
+def _render_toml(session: str, windows: list[tuple[str, str, list[str]]]) -> str:
+    """Render *windows* (name, layout, directories) as a 'load'-compatible TOML document.
 
     *session* (the dumped session's full tmux name) is written as
     ``session_name`` so that reloading the file reproduces the exact same
@@ -91,11 +94,13 @@ def _render_toml(session: str, windows: list[tuple[str, list[str]]]) -> str:
     default.
     """
     lines: list[str] = [f"session_name = {_toml_string(session)}", ""]
-    for name, directories in windows:
+    for name, layout, directories in windows:
         lines.append("[[window]]")
         if name:
             lines.append(f"name = {_toml_string(name)}")
         lines.append(f"panes = {len(directories)}")
+        if layout:
+            lines.append(f"layout = {_toml_string(layout)}")
         lines.append("")
         for directory in directories:
             lines.append("[[window.pane]]")

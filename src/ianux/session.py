@@ -43,6 +43,7 @@ class SessionManager:
         self._create_panes(
             session_name, "0", first_window.panes, first_window.split_direction
         )
+        self._apply_layout(session_name, "0", first_window.layout)
         self._initialize_panes(session_name, "0", first_directories, first_window.init_commands)
 
         for window in config.windows[1:]:
@@ -51,6 +52,7 @@ class SessionManager:
             self._create_panes(
                 session_name, window_index, window.panes, window.split_direction
             )
+            self._apply_layout(session_name, window_index, window.layout)
             self._initialize_panes(session_name, window_index, window_directories, window.init_commands)
 
         if len(config.windows) > 1:
@@ -149,6 +151,16 @@ class SessionManager:
                 direction=split_direction,
             )
             self._client.select_layout(session_name, "tiled", window=window)
+
+    def _apply_layout(self, session_name: str, window: str, layout: str | None) -> None:
+        """Apply the window's configured tmux *layout*, if any.
+
+        A raw layout string whose pane count doesn't match the window makes
+        tmux fail; ``select_layout`` turns that into an AppError, stopping
+        the setup rather than silently keeping a different layout.
+        """
+        if layout is not None:
+            self._client.select_layout(session_name, layout, window=window)
 
     def _initialize_panes(
         self,

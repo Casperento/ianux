@@ -11,6 +11,7 @@ session  (s)  — default
     ~~~~~~~~~~~~~~~~
     ``--window-panes`` is repeatable, once per window.  ``--window-name``
     optionally names each window, aligned by position with ``--window-panes``.
+    ``--window-layout`` optionally sets each window's tmux layout the same way.
 
     Per-pane directories and init commands
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -227,6 +228,20 @@ def _add_session_subparser(subparsers) -> None:
         ),
     )
     p.add_argument(
+        "-l", "--window-layout",
+        action="append",
+        dest="window_layouts",
+        default=None,
+        metavar="LAYOUT",
+        help=(
+            "tmux layout for one window, applied after its panes are created:"
+            " a preset (even-horizontal, even-vertical, main-horizontal,"
+            " main-vertical, tiled) or a layout string as written by 'dump'."
+            "  Repeat once per window (in order), aligned with --window-panes."
+            "  Windows without one keep the --split-direction layout."
+        ),
+    )
+    p.add_argument(
         "-n", "--session-name",
         default=None,
         help="Exact tmux session name to use (default: auto-generated, e.g. job_DDHHMMSS).",
@@ -391,6 +406,8 @@ def _add_load_subparser(subparsers) -> None:
             "    name           optional string, default: tmux's own default\n"
             f"    panes          optional int, default {_DEFAULT_PANES}\n"
             "    split_direction optional first split axis: 'horizontal' (top/bottom) or 'vertical' (side-by-side), default horizontal\n"
+            "    layout         optional tmux layout preset (e.g. 'tiled', 'main-vertical') or a\n"
+            "                   layout string written by 'dump'; must match the pane count\n"
             "    [[window.pane]] zero or more tables, one per pane:\n"
             "      directory      optional string, default: current working directory\n"
             "      init_command   optional string, default: 'echo Hello'\n\n"
@@ -640,10 +657,16 @@ def _parse_session_config(
 ) -> SessionConfig:
     window_panes: list[int] = parsed.window_panes or [_DEFAULT_PANES]
     window_names: list[str] = parsed.window_names or []
+    window_layouts: list[str] = parsed.window_layouts or []
 
     if len(window_names) > len(window_panes):
         parser.error(
             f"session: got {len(window_names)} --window-name value(s)"
+            f" for {len(window_panes)} window(s)."
+        )
+    if len(window_layouts) > len(window_panes):
+        parser.error(
+            f"session: got {len(window_layouts)} --window-layout value(s)"
             f" for {len(window_panes)} window(s)."
         )
 
@@ -668,6 +691,7 @@ def _parse_session_config(
                     init_commands=per_window_init_commands[i],
                     name=window_names[i] if i < len(window_names) else None,
                     split_direction=parsed.split_direction,
+                    layout=window_layouts[i] if i < len(window_layouts) else None,
                 )
             )
         return build_session_config(

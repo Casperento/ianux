@@ -35,6 +35,12 @@ Use `-p`/`--window-panes` once per window to set its pane count (1–256); if om
 
 The long forms `--window-panes` and `--window-name` can be used in place of `-p` and `-w`. Use `--split-direction horizontal` (the default) to make the first split top-to-bottom, or `--split-direction vertical` to make it side-by-side. Subsequent splits alternate axes to make four equal quadrants. This applies to every window created by the command.
 
+Use `-l`/`--window-layout LAYOUT` to apply a tmux layout to a window once its panes are created. Repeat it once per window in the same order as `-p`; windows without one keep the `--split-direction` layout. `LAYOUT` is a tmux preset (`even-horizontal`, `even-vertical`, `main-horizontal`, `main-vertical`, `tiled`) or a layout string as written by `dump`. A layout string must describe the same number of panes as the window, otherwise Ianux stops with an error.
+
+```bash
+ianux session -p 3 -l main-vertical -p 2 -l even-horizontal
+```
+
 Use `--session-name NAME` to choose an exact name, `--detach` to create without attaching, and `--init-command CMD` to set commands run after changing into each pane's directory. The default command is `session`, so `ianux --window-panes 6` is equivalent to `ianux session --window-panes 6`.
 
 When the requested name already exists, Ianux chooses a numbered variant (`name-1`, `name-2`, …) and leaves the existing session untouched. Unnamed sessions receive a generated `job_DDHHMMSS` name.
@@ -110,7 +116,7 @@ The target must be a full pane address: `SESSION:WINDOW.PANE`, or `WINDOW.PANE` 
 
 ## `load` and `dump`
 
-`load` creates a session from TOML; `dump` records pane directories and window names in that TOML format:
+`load` creates a session from TOML; `dump` records pane directories, window names, and each window's tmux layout in that TOML format:
 
 ```bash
 ianux load project.toml

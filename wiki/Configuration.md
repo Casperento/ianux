@@ -1,6 +1,6 @@
 # TOML session configurations
 
-`ianux load FILE.toml` creates a session from a TOML configuration. `ianux dump SESSION` writes the pane directories and window names from an existing session in the same format.
+`ianux load FILE.toml` creates a session from a TOML configuration. `ianux dump SESSION` writes the pane directories, window names, and window layouts from an existing session in the same format.
 
 ## Example
 
@@ -36,6 +36,7 @@ init_command = "bash"
 - Top-level `detach` is an optional boolean and defaults to `false`.
 - Each `[[window]]` table defines one window. `name` is optional; `panes` is an optional integer defaulting to 1.
 - `split_direction` is optional and defaults to `"horizontal"`, which makes the first split top-to-bottom. Set it to `"vertical"` to make the first split side-by-side. The next split uses the other axis: pane three splits the second pane, and pane four splits the original pane, forming four equal quadrants. For more than four panes, Ianux uses a tiled layout while subdividing the quadrants.
+- `layout` is an optional tmux layout applied after the window's panes are created: a preset (`even-horizontal`, `even-vertical`, `main-horizontal`, `main-vertical`, `tiled`) or a layout string such as `"b25d,238x64,0,0{119x64,0,0,0,118x64,120,0,1}"`. `dump` always writes the window's current layout string here, so `load` restores the exact pane arrangement. A layout string must match the window's `panes` count; otherwise loading stops with an error. When `layout` is omitted, the `split_direction` arrangement is kept.
 - Each `[[window.pane]]` table supplies an optional `directory` and `init_command` for one pane. Their defaults are the current working directory and `echo Hello`. In `directory`, `~` and environment variables (`$VAR`, `${VAR}`) are expanded.
 - Pane tables are ordered within each window. If a window has more panes than pane tables, the final table's values are reused for the remaining panes in that window.
 - Pane tables beyond a window's `panes` count are ignored.

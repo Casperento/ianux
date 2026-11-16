@@ -79,7 +79,7 @@ class TestParseArgsSession:
         win = cfg.windows[0]
         assert win.panes == 1  # _DEFAULT_PANES
         assert win.directories == [Path.cwd()]
-        assert len(win.init_commands) == 1 and win.init_commands[0]  # non-empty default
+        assert win.init_commands == [""]  # no default command
         assert cfg.detach is False
 
     def test_window_panes_flag_for_one_window(self):

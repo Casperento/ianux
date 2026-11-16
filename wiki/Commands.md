@@ -31,7 +31,7 @@ ianux session -p 2 -w editor \
   -p 1 -w logs
 ```
 
-Use `-p`/`--window-panes` once per window to set its pane count (1–256); if omitted, one window with a single pane is created. Optionally repeat `-w`/`--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and `echo Hello`.
+Use `-p`/`--window-panes` once per window to set its pane count (1–256); if omitted, one window with a single pane is created. Optionally repeat `-w`/`--window-name` in the same order. Repeat `--directory` and `--init-command` to configure panes in order across all windows. If fewer values are supplied than there are panes, the last value is reused. Defaults are the current directory and no init command (panes just open a shell).
 
 The long forms `--window-panes` and `--window-name` can be used in place of `-p` and `-w`. Use `--split-direction horizontal` (the default) to make the first split top-to-bottom, or `--split-direction vertical` to make it side-by-side. Subsequent splits alternate axes to make four equal quadrants. This applies to every window created by the command.
 

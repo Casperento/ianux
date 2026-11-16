@@ -210,6 +210,7 @@ def _add_session_subparser(subparsers) -> None:
             " When fewer entries than the total pane count are given, the"
             " last entry is reused for remaining panes."
             " If omitted entirely, the current working directory is used."
+            " ~ and environment variables ($VAR, ${VAR}) are expanded."
         ),
     )
     p.add_argument(

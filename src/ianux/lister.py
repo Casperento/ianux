@@ -25,6 +25,7 @@ _SESSION_RE = re.compile(
 )
 
 _HDR_WIN = "Window(s)/Pane(s)"
+_HDR_ATT = "Attached"
 
 
 @dataclass
@@ -35,6 +36,7 @@ class _Session:
     windows:   str
     created:   str
     size:      str
+    attached:  int = 0
     win_panes: dict[str, list[str]] = field(default_factory=dict)
 
 
@@ -56,6 +58,13 @@ def _parse(line: str) -> _Session | None:
         created = created,
         size    = m.group("size") or "-",
     )
+
+
+def _attached_label(count: int) -> str:
+    """Render an attached-client count: ``-`` (detached), ``yes``, or ``yes (N)``."""
+    if count <= 0:
+        return "-"
+    return "yes" if count == 1 else f"yes ({count})"
 
 
 def _win_pane_parts(win_panes: dict[str, list[str]]) -> list[tuple[str, str]]:
@@ -88,9 +97,9 @@ class SessionLister:
 
             Sessions
             ────────────────────────────────────────────────────────────────
-              #   Name                         Window(s)/Pane(s)          Created              Size
-              1   my-session                   0 : 0  (1 pane)            Aug 19 2026  05:58   270x72
-              2   ianux-session-name             0 : 0, 1, 2  (3 panes)    Aug 20 2026  10:10   236x64
+              #  Name                Attached  Window(s)/Pane(s)        Created              Size
+              1  my-session          yes       0 : 0  (1 pane)          Aug 19 2026  05:58  270x72
+              2  ianux-session-name  -         0 : 0, 1, 2  (3 panes)   Aug 20 2026  10:10  236x64
                                                1 : 0  (1 pane)
 
         Returns 0 on success.
@@ -102,8 +111,11 @@ class SessionLister:
         # which 'attach'/'kill' use — keeps the # column a stable cross-command ID.
         sessions.sort(key=lambda s: s.name)
 
-        # Augment each session with per-window/pane detail (one tmux call each)
+        # Augment each session with attached-client counts (one tmux call in
+        # total) and per-window/pane detail (one tmux call each)
+        attached = self._client.session_attached_counts()
         for s in sessions:
+            s.attached = attached.get(s.name, 0)
             s.win_panes = self._client.list_panes_all(s.name)
 
         header = f"{_BOLD}Sessions{_RESET}"
@@ -142,6 +154,8 @@ class SessionLister:
         # Column widths
         idx_w  = len(str(len(sessions)))
         name_w = max(len(s.name) for s in sessions)
+        att_labels = [_attached_label(s.attached) for s in sessions]
+        att_w  = max(len(_HDR_ATT), max(len(a) for a in att_labels))
         win_w  = max(
             len(_HDR_WIN),
             max_left_w + (2 + max_count_w if max_count_w else 0),
@@ -150,35 +164,39 @@ class SessionLister:
         size_w = max(max(len(s.size)    for s in sessions), 4)   # at least "Size"
 
         # Rule width matches the rendered row: "  idx  name  win  created  size"
-        row_w  = 2 + idx_w + 2 + max(name_w, 4) + 2 + win_w + 2 + dat_w + 2 + size_w
+        row_w  = 2 + idx_w + 2 + max(name_w, 4) + 2 + att_w + 2 + win_w + 2 + dat_w + 2 + size_w
         rule   = f"{_DIM}{'─' * row_w}{_RESET}"
         print(f"\n{header}\n{rule}")
 
         # Header row (Created and Size right-aligned)
         h_idx  = "#".ljust(idx_w)
         h_name = "Name".ljust(name_w)
+        h_att  = _HDR_ATT.ljust(att_w)
         h_win  = _HDR_WIN.ljust(win_w)
         h_dat  = "Created".rjust(dat_w)
         h_size = "Size".rjust(size_w)
         print(
-            f"  {_DIM}{h_idx}  {h_name}  {h_win}  {h_dat}  {h_size}{_RESET}"
+            f"  {_DIM}{h_idx}  {h_name}  {h_att}  {h_win}  {h_dat}  {h_size}{_RESET}"
         )
 
         # Leading spaces to align continuation lines under the Window(s)/Pane(s) column
-        cont_prefix = " " * (2 + idx_w + 2 + name_w + 2)
+        cont_prefix = " " * (2 + idx_w + 2 + name_w + 2 + att_w + 2)
 
-        for i, (s, wpl) in enumerate(zip(sessions, wp_lines), start=1):
+        for i, (s, wpl, att) in enumerate(zip(sessions, wp_lines, att_labels), start=1):
             colour = _PALETTE[(i - 1) % len(_PALETTE)]
             idx    = str(i).ljust(idx_w)
             name   = s.name.ljust(name_w)
             dat    = s.created.rjust(dat_w)
             size   = s.size.rjust(size_w)
+            att_colour = _GREEN if s.attached > 0 else _DIM
+            att_cell   = f"{att_colour}{att.ljust(att_w)}{_RESET}"
 
             # First window on the same row as the session name
             first_win = wpl[0].ljust(win_w)
             print(
                 f"  {_DIM}{idx}{_RESET}"
                 f"  {colour}{_BOLD}{name}{_RESET}"
+                f"  {att_cell}"
                 f"  {_DIM}{first_win}  {dat}  {size}{_RESET}"
             )
 
